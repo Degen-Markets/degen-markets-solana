@@ -9,7 +9,6 @@ import {getTitleHash} from "./utils/cryptography";
 dotenv.config();
 
 describe("Pool Creation", () => {
-
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.DegenPools as anchor.Program<DegenPools>;
@@ -66,19 +65,19 @@ describe("Pool Creation", () => {
 
     it('should fail if a random wallet is used to create a pool', async () => {
         const randomWallet = await generateKeypair();
-        const title = "Who will win the US Elections?";
+        const title = "Will $MOG go to $2 B market cap?";
         const poolAccountKey = await derivePoolAccountKey(title);
         try {
             await program.methods.createPool(title, getTitleHash(title))
-                .accounts([
-                    poolAccountKey,
-                    randomWallet.publicKey,
-                    anchor.web3.SystemProgram.programId,
-                ])
+                .accounts({
+                    poolAccount: poolAccountKey,
+                    wallet: randomWallet.publicKey,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
                 .signers([randomWallet])
                 .rpc();
         } catch (e) {
-            expect(e.message).to.eql(`unknown signer: ${randomWallet.publicKey}`);
+            expect(e.message).to.include('An address constraint was violated');
         }
     });
 
