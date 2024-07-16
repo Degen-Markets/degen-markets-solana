@@ -3,7 +3,7 @@ import {getBytesFromHashedStr, getTitleHash} from "./cryptography";
 import * as anchor from "@coral-xyz/anchor";
 
 export const derivePoolAccountKey = async (title: string) => {
-    const [pda, _] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [pda] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             getBytesFromHashedStr(title),
         ],

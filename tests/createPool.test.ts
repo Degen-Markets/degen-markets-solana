@@ -16,7 +16,7 @@ describe("Pool Creation", () => {
         expect(poolAccountData).to.eql({
             title: 'Who will win the US Elections?',
             hasConcluded: false,
-            winningOption: anchor.web3.SystemProgram.programId,
+            winningOption: anchor.web3.SystemProgram.programId, // default option
         });
     });
 

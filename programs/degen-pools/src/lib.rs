@@ -59,6 +59,10 @@ pub mod degen_pools {
         ctx: Context<EnterPool>,
         value: u64,
     ) -> Result<()> {
+        let pool_account = &ctx.accounts.pool_account;
+        if pool_account.has_concluded {
+            return err!(CustomError::PoolConcluded);
+        }
         let entry_account = &mut ctx.accounts.entry_account;
         entry_account.entrant = *ctx.accounts.entrant.key;
         entry_account.value += value;
