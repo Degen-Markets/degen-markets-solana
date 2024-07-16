@@ -18,7 +18,7 @@ export const createPool = async (title: string, keypair: anchor.web3.Keypair) =>
         .createPool(title, getTitleHash(title))
         .accounts({
             poolAccount: poolAccountKey,
-            wallet: keypair.publicKey,
+            admin: keypair.publicKey,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([keypair])

@@ -87,4 +87,11 @@ pub mod degen_pools {
 
         Ok(())
     }
+
+    pub fn conclude_pool(ctx: Context<ConcludePool>, winning_option: Pubkey) -> Result<()> {
+        let pool_account = &mut ctx.accounts.pool_account;
+        pool_account.has_concluded = true;
+        pool_account.winning_option = winning_option;
+        Ok(())
+    }
 }

@@ -30,7 +30,7 @@ describe("Option Creation", () => {
                 .accountsPartial({
                     optionAccount: optionTwoAccountKey,
                     poolAccount: poolAccountKey,
-                    wallet: authorityKeypair.publicKey,
+                    admin: authorityKeypair.publicKey,
                     systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([authorityKeypair])

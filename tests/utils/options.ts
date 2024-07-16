@@ -19,7 +19,7 @@ export const createOption = async (optionTitle: string, keypair: anchor.web3.Key
         .accountsPartial({
             optionAccount: optionAccountKey,
             poolAccount: poolAccountKey,
-            wallet: keypair.publicKey,
+            admin: keypair.publicKey,
             systemProgram: anchor.web3.SystemProgram.programId
         })
         .signers([keypair])

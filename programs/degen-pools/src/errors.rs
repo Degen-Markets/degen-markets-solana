@@ -8,4 +8,6 @@ pub enum CustomError {
     PoolOptionDoesNotMatchHash,
     #[msg("Pool has concluded!")]
     PoolConcluded,
+    #[msg("Entry does not match hash!")]
+    EntryDoesNotMatchHash,
 }
