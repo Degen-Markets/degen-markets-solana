@@ -1,10 +1,9 @@
-import { generateKeypair, getLocalAccount } from "./utils/keypairs";
+import {generateKeypair, getLocalAccount} from "./utils/keypairs";
 import {createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {program} from "./utils/constants";
-import * as anchor from "@coral-xyz/anchor";
 import BN from 'bn.js';
-import {deriveEntryAccountKey, enterPool} from "./utils/entries";
+import {enterPool} from "./utils/entries";
 import {expect} from "chai";
 
 describe('Pool Entry', () => {
