@@ -5,5 +5,7 @@ pub enum CustomError {
     #[msg("Title hash does not match title!")]
     TitleDoesNotMatchHash,
     #[msg("Pool option does not match hash!")]
-    PoolOptionDoesNotMatchHash
+    PoolOptionDoesNotMatchHash,
+    #[msg("Pool has concluded!")]
+    PoolConcluded,
 }
