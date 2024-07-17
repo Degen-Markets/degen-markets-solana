@@ -94,4 +94,8 @@ pub mod degen_pools {
         pool_account.winning_option = winning_option;
         Ok(())
     }
+
+    pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
+
+    }
 }

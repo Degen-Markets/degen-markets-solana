@@ -74,3 +74,15 @@ pub struct ConcludePool<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
 }
+
+#[derive(Accounts)]
+pub struct ClaimWin<'info> {
+    #[account(mut)]
+    pub pool_account: Account<'info, Pool>,
+    #[account(mut, signer)]
+    pub winner: Signer<'info>,
+    #[account(mut)]
+    pub entry_account: Account<'info, Entry>,
+    #[account(mut)]
+    pub option_account: Account<'info, PoolOption>,
+}
