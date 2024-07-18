@@ -95,7 +95,7 @@ pub mod degen_pools {
         Ok(())
     }
 
-    pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
-
-    }
+    // pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
+    //     Ok(())
+    // }
 }
