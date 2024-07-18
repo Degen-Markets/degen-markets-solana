@@ -5,6 +5,7 @@ import {expect} from "chai";
 import {getTitleHash} from "./utils/cryptography";
 import {program} from "./utils/constants";
 import {createPool, derivePoolAccountKey} from "./utils/pools";
+import BN from "bn.js";
 
 dotenv.config();
 
@@ -13,11 +14,10 @@ describe("Pool Creation", () => {
         const authorityKeypair = await getLocalAccount();
         const title = "Who will win the US Elections?";
         const { poolAccountData } = await createPool(title, authorityKeypair);
-        expect(poolAccountData).to.eql({
-            title: 'Who will win the US Elections?',
-            hasConcluded: false,
-            winningOption: anchor.web3.SystemProgram.programId, // default option
-        });
+        expect(poolAccountData.title).to.eql(title);
+        expect(poolAccountData.hasConcluded).to.eql(false);
+        expect(poolAccountData.winningOption).to.eql(anchor.web3.SystemProgram.programId);
+        expect(Number(poolAccountData.value)).to.eql(0);
     });
 
     it('should fail if tried twice', async () => {

@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
+use round::round_down;
 
 pub use instructions::*;
 pub use state::*;
@@ -29,6 +30,7 @@ pub mod degen_pools {
         pool_account.title = title;
         pool_account.has_concluded = false;
         pool_account.winning_option = Pubkey::default();
+        pool_account.value = 0;
         Ok(())
     }
 
@@ -59,10 +61,12 @@ pub mod degen_pools {
         ctx: Context<EnterPool>,
         value: u64,
     ) -> Result<()> {
-        let pool_account = &ctx.accounts.pool_account;
+        let pool_account = &mut ctx.accounts.pool_account;
         if pool_account.has_concluded {
             return err!(CustomError::PoolConcluded);
         }
+        pool_account.value += value;
+
         let entry_account = &mut ctx.accounts.entry_account;
         entry_account.entrant = *ctx.accounts.entrant.key;
         entry_account.value += value;
@@ -95,7 +99,15 @@ pub mod degen_pools {
         Ok(())
     }
 
-    // pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
-    //     Ok(())
-    // }
+    pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
+        let option_account = &ctx.accounts.option_account;
+        let pool_account = &ctx.accounts.pool_account;
+        let entry_account = &mut ctx.accounts.entry_account;
+        entry_account.is_claimed = true;
+        let win_share = entry_account.value/option_account.value;
+        msg!("Win share for user is: {}", win_share);
+        let win_amount = win_share * pool_account.value;
+        msg!("Win amount for user is: {}", win_amount);
+        Ok(())
+    }
 }

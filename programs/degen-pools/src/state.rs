@@ -5,6 +5,7 @@ pub struct Pool {
     pub title: String,
     pub has_concluded: bool,
     pub winning_option: Pubkey,
+    pub value: u64,
 }
 
 #[account]
