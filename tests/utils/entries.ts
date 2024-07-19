@@ -33,3 +33,22 @@ export const enterPool = async (poolAccountKey: anchor.web3.PublicKey, optionAcc
         entryAccountData,
     }
 };
+
+export const claimWin = async (
+    poolAccountKey: anchor.web3.PublicKey,
+    optionAccountKey: anchor.web3.PublicKey,
+    entryAccountKey: anchor.web3.PublicKey,
+    winnerKeypair: anchor.web3.Keypair
+) => {
+    await program.methods
+        .claimWin()
+        .accountsPartial({
+            poolAccount: poolAccountKey,
+            optionAccount: optionAccountKey,
+            entryAccount: entryAccountKey,
+            winner: winnerKeypair.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([winnerKeypair])
+        .rpc();
+};

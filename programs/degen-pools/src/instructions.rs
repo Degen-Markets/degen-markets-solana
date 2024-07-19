@@ -2,14 +2,13 @@ use anchor_lang::prelude::*;
 use crate::state::{Pool, PoolOption, Entry}; // Import structs from state.rs
 const AUTHORITY_PUBKEY: Pubkey = pubkey!("rv9MdKVp2r13ZrFAwaES1WAQELtsSG4KEMdxur8ghXd");
 
-
 #[derive(Accounts)]
 #[instruction(title: String, title_hash: [u8; 32])]
 pub struct CreatePool<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + 1 + 32 + (4 + title.len()) + 8, // 8 bytes for discriminator, 1 byte for bool has_concluded, 32 bytes for Pubkey winning_option, 4 bytes for string + title length bytes, 8 for u64
+        space = 8 + 1 + 32 + (4 + title.len()) + 8, // 8 bytes for discriminator, 1 byte for bool has_concluded, 32 bytes for Pubkey winning_option, 4 bytes for string + title length bytes, 8 for value
         seeds = [&title_hash],
         bump
     )]
@@ -85,4 +84,5 @@ pub struct ClaimWin<'info> {
     pub entry_account: Account<'info, Entry>,
     #[account(mut)]
     pub option_account: Account<'info, PoolOption>,
+    pub system_program: Program<'info, System>,
 }

@@ -10,4 +10,6 @@ pub enum CustomError {
     PoolConcluded,
     #[msg("Entry does not match hash!")]
     EntryDoesNotMatchHash,
+    #[msg("Entry already claimed!")]
+    EntryAlreadyClaimed,
 }

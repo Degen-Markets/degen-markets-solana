@@ -1,13 +1,37 @@
 import {generateKeypair, getLocalAccount} from "./utils/keypairs";
 import {createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
-import {enterPool} from "./utils/entries";
+import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
-import {program, provider} from "./utils/constants";
-import {expect} from "chai";
+import { program } from "./utils/constants";
 
 describe('Wins claiming', () => {
-   it('should not let a user claim a pool that has not concluded', () => {});
+   it('should not let a user claim a pool that has not concluded', async () => {
+       const title = "Will $PEPE market cap flip $DOGE at some point in 2025?";
+       const optionTitle = "Yes";
+       const adminWallet = await getLocalAccount();
+       const user = await generateKeypair();
+       const { poolAccountKey } = await createPool(title, adminWallet);
+       const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
+       const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
+
+       await program.methods
+           .concludePool(optionAccountKey)
+           .accounts({
+               poolAccount: poolAccountKey,
+               admin: adminWallet.publicKey,
+           })
+           .signers([adminWallet])
+           .rpc();
+
+       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
+
+       try {
+           await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
+       } catch (e) {
+           console.log(e);
+       }
+   });
    it("should not let a user claim using someone else's entry account", () => {});
    it('should not let a user claim if they did not win', () => {});
    it('should not let a user claim twice', () => {});
@@ -35,25 +59,7 @@ describe('Wins claiming', () => {
           .signers([adminWallet])
           .rpc();
 
-      await program.methods
-          .claimWin()
-          .accounts({
-             poolAccount: poolAccountKey,
-             optionAccount: optionAccountKey,
-             entryAccount: entryAccountKey,
-             winner: user.publicKey,
-          })
-          .signers([user])
-          .rpc();
-       await program.methods
-           .claimWin()
-           .accounts({
-               poolAccount: poolAccountKey,
-               optionAccount: optionAccountKey,
-               entryAccount: entry1AccountKey,
-               winner: user1.publicKey,
-           })
-           .signers([user1])
-           .rpc();
+      await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
+      await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
    });
 });

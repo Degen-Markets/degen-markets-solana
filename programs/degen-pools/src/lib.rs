@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
-use round::round_down;
 
 pub use instructions::*;
 pub use state::*;
@@ -21,7 +20,7 @@ pub mod degen_pools {
         title: String,
         title_hash: [u8; 32],
     ) -> Result<()> {
-        msg!("Creating pool for {}", title);
+        msg!("Creating pool for {} with hash {:?}", title, title_hash);
         if hash(&title.as_bytes()).to_bytes() != title_hash {
             return err!(CustomError::TitleDoesNotMatchHash);
         }
@@ -111,18 +110,8 @@ pub mod degen_pools {
         let win_amount = (entry_account.value * win_share_value)/100;
         msg!("Win amount for user is: {}", win_amount);
         // Transfer SOL from pool to winner
-        let ix = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.pool_account.key(),
-            &ctx.accounts.winner.key(),
-            win_amount,
-        );
-        anchor_lang::solana_program::program::invoke(
-            &ix,
-            &[
-                ctx.accounts.pool_account.to_account_info(),
-                ctx.accounts.winner.to_account_info(),
-            ],
-        )?;
+        **ctx.accounts.pool_account.to_account_info().try_borrow_mut_lamports()? -= win_amount;
+        **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
         Ok(())
     }
 }
