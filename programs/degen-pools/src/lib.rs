@@ -104,10 +104,25 @@ pub mod degen_pools {
         let pool_account = &ctx.accounts.pool_account;
         let entry_account = &mut ctx.accounts.entry_account;
         entry_account.is_claimed = true;
-        let win_share = entry_account.value/option_account.value;
-        msg!("Win share for user is: {}", win_share);
-        let win_amount = win_share * pool_account.value;
+        let win_share_value = (pool_account.value * 100)/option_account.value;
+        msg!("1 Win Share value is: {}", win_share_value);
+        msg!("Option account value is {}, Entry account value is: {}", option_account.value, entry_account.value);
+        msg!("User has {} of these shares", entry_account.value);
+        let win_amount = (entry_account.value * win_share_value)/100;
         msg!("Win amount for user is: {}", win_amount);
+        // Transfer SOL from pool to winner
+        let ix = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.pool_account.key(),
+            &ctx.accounts.winner.key(),
+            win_amount,
+        );
+        anchor_lang::solana_program::program::invoke(
+            &ix,
+            &[
+                ctx.accounts.pool_account.to_account_info(),
+                ctx.accounts.winner.to_account_info(),
+            ],
+        )?;
         Ok(())
     }
 }

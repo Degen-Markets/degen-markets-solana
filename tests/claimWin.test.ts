@@ -3,7 +3,8 @@ import {createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {enterPool} from "./utils/entries";
 import BN from "bn.js";
-import {program} from "./utils/constants";
+import {program, provider} from "./utils/constants";
+import {expect} from "chai";
 
 describe('Wins claiming', () => {
    it('should not let a user claim a pool that has not concluded', () => {});
@@ -21,9 +22,9 @@ describe('Wins claiming', () => {
       const { poolAccountKey } = await createPool(title, adminWallet);
       const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
       const { optionAccountKey: wrongOptionAccountKey } = await createOption(wrongOptionTitle, adminWallet, poolAccountKey);
-      const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(3));
-      await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10));
-      await enterPool(poolAccountKey, optionAccountKey, user1, new BN(1));
+      const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(3_000));
+      const { entryAccountKey: entry1AccountKey} = await enterPool(poolAccountKey, optionAccountKey, user1, new BN(1_000));
+      await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10_000));
 
       await program.methods
           .concludePool(optionAccountKey)
@@ -44,5 +45,15 @@ describe('Wins claiming', () => {
           })
           .signers([user])
           .rpc();
+       await program.methods
+           .claimWin()
+           .accounts({
+               poolAccount: poolAccountKey,
+               optionAccount: optionAccountKey,
+               entryAccount: entry1AccountKey,
+               winner: user1.publicKey,
+           })
+           .signers([user1])
+           .rpc();
    });
 });
