@@ -99,9 +99,12 @@ pub mod degen_pools {
     }
 
     pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
+        let entry_account = &mut ctx.accounts.entry_account;
+        if entry_account.is_claimed {
+            return err!(CustomError::EntryAlreadyClaimed);
+        }
         let option_account = &ctx.accounts.option_account;
         let pool_account = &ctx.accounts.pool_account;
-        let entry_account = &mut ctx.accounts.entry_account;
         entry_account.is_claimed = true;
         let win_share_value = (pool_account.value * 100)/option_account.value;
         msg!("1 Win Share value is: {}", win_share_value);

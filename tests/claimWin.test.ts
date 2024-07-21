@@ -4,6 +4,7 @@ import {createOption} from "./utils/options";
 import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
 import { program } from "./utils/constants";
+import {expect} from "chai";
 
 describe('Wins claiming', () => {
    it('should not let a user claim a pool that has not concluded', async () => {
@@ -29,7 +30,7 @@ describe('Wins claiming', () => {
        try {
            await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
        } catch (e) {
-           console.log(e);
+           expect(e.message).to.include('EntryAlreadyClaimed');
        }
    });
    it("should not let a user claim using someone else's entry account", () => {});
