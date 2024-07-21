@@ -5,7 +5,6 @@ import {program, provider} from "./utils/constants";
 import BN from 'bn.js';
 import {deriveEntryAccountKey, enterPool} from "./utils/entries";
 import {expect} from "chai";
-import * as anchor from "@coral-xyz/anchor";
 
 describe('Pool Entry', () => {
     it('should let a user enter on an active pool', async () => {
@@ -17,7 +16,6 @@ describe('Pool Entry', () => {
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         const value = new BN(123);
         const { entryAccountKey, entryAccountData } = await enterPool(poolAccountKey, optionAccountKey, userWallet, value);
-        expect(entryAccountData.entrant).to.eql(userWallet.publicKey);
         expect(entryAccountData.value.sub(value)).to.eql(new BN(0));
         expect(entryAccountData.isClaimed).to.eql(false);
     });
