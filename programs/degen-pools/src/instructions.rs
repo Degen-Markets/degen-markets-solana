@@ -80,7 +80,7 @@ pub struct ClaimWin<'info> {
     pub pool_account: Account<'info, Pool>,
     #[account(mut, signer)]
     pub winner: Signer<'info>,
-    #[account(mut)]
+    #[account(mut, close = winner)]
     pub entry_account: Account<'info, Entry>,
     #[account(mut)]
     pub option_account: Account<'info, PoolOption>,

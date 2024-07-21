@@ -3,8 +3,8 @@ import {concludePool, createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
-import { program } from "./utils/constants";
 import {expect} from "chai";
+import {program} from "./utils/constants";
 
 describe('Wins claiming', () => {
    it('should not let a user claim twice', async () => {
@@ -23,7 +23,8 @@ describe('Wins claiming', () => {
        try {
            await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
        } catch (e) {
-           expect(e.message).to.include('EntryAlreadyClaimed');
+           // account deleted after a successful win claim
+           expect(e.message).to.include('AccountNotInitialized');
        }
    });
    it("should not let a user claim using someone else's entry account", async () => {
@@ -43,6 +44,9 @@ describe('Wins claiming', () => {
        } catch (e) {
            expect(e.message).to.include('EntryNotDerivedFromOptionOrSigner');
        }
+
+       // ensure account is not deleted after failed claim win (no exception is thrown)
+       await program.account.entry.fetch(entryAccountKey);
    });
    it('should not let a user claim if they did not win', async () => {
        const title = "Will we get a SOL ETF by the end of 2024?";
@@ -73,7 +77,9 @@ describe('Wins claiming', () => {
            expect(e.message).to.include('EntryNotDerivedFromOptionOrSigner');
        }
    });
-   it('should not let a user claim a pool that has not concluded', () => {});
+   it('should not let a user claim a pool that has not concluded', () => {
+       // test not needed: it is the same test as checking if the provided option is the pool_account.winning_option
+   });
    it("should claim the user's share of the win", async () => {
       const title = "Will ETH market cap over take Bitcoin's market cap?";
       const optionTitle = "Yes";
@@ -93,5 +99,12 @@ describe('Wins claiming', () => {
 
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
       await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
+
+      // claiming a win closes the entry account for the user to refund the lamports
+      try {
+        await program.account.entry.fetch(entryAccountKey);
+      } catch (e) {
+        expect(e.message).to.include(`Account does not exist or has no data ${entryAccountKey}`);
+      }
    });
 });

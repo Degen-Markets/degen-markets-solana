@@ -26,9 +26,7 @@ export const getLocalAccount = async () => {
     const keypairPath = await yaml.parse(configYml).keypair_path;
     const localKeypair = createKeypairFromFile(keypairPath);
 
-    console.log(`Local account loaded successfully.`);
-    console.log(`Local account's address is:`);
-    console.log(`   ${localKeypair.publicKey}`);
+    console.log(`Local account loaded successfully: ${localKeypair.publicKey}`);
     return localKeypair;
 };
 
