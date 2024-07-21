@@ -16,7 +16,6 @@ pub struct PoolOption {
 
 #[account]
 pub struct Entry {
-    pub entrant: Pubkey,
     pub value: u64,
     pub is_claimed: bool,
 }

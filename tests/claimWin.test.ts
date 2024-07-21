@@ -41,7 +41,7 @@ describe('Wins claiming', () => {
        try {
            await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1);
        } catch (e) {
-           expect(e.message).to.include('EntryNotOwnedBySigner');
+           expect(e.message).to.include('EntryNotDerivedFromOptionOrSigner');
        }
    });
    it('should not let a user claim if they did not win', () => {});

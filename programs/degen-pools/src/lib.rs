@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
+use anchor_lang::solana_program::pubkey::Pubkey;
 
 pub use instructions::*;
 pub use state::*;
@@ -67,7 +68,6 @@ pub mod degen_pools {
         pool_account.value += value;
 
         let entry_account = &mut ctx.accounts.entry_account;
-        entry_account.entrant = *ctx.accounts.entrant.key;
         entry_account.value += value;
         entry_account.is_claimed = false;
 
@@ -104,11 +104,22 @@ pub mod degen_pools {
             return err!(CustomError::EntryAlreadyClaimed);
         }
         let signer_account = &ctx.accounts.winner;
-        let option_account = &ctx.accounts.option_account;
-        if entry_account.entrant != signer_account.key() {
-            return err!(CustomError::EntryNotOwnedBySigner);
-        }
         let pool_account = &ctx.accounts.pool_account;
+        let option_account = &ctx.accounts.option_account;
+
+        if pool_account.winning_option != option_account.key() {
+            return err!(CustomError::LosingOption);
+        }
+
+        let (derived_entry_account_key, _entry_account_bump) = Pubkey::find_program_address(
+            &[&option_account.key().to_bytes(), &signer_account.key().to_bytes()],
+            ctx.program_id
+        );
+
+        if derived_entry_account_key != entry_account.key() {
+            return err!(CustomError::EntryNotDerivedFromOptionOrSigner)
+        }
+
         entry_account.is_claimed = true;
         let win_share_value = (pool_account.value * 100)/option_account.value;
         msg!("1 Win Share value is: {}", win_share_value);

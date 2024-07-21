@@ -8,12 +8,10 @@ pub enum CustomError {
     PoolOptionDoesNotMatchHash,
     #[msg("Pool has concluded!")]
     PoolConcluded,
-    #[msg("Entry does not match hash!")]
-    EntryDoesNotMatchHash,
     #[msg("Entry already claimed!")]
     EntryAlreadyClaimed,
-    #[msg("Entry is not yours!")]
-    EntryNotOwnedBySigner,
     #[msg("Entry did not win")]
-    LosingEntry,
+    LosingOption,
+    #[msg("This entry was not derived from the winning option or the signer")]
+    EntryNotDerivedFromOptionOrSigner,
 }

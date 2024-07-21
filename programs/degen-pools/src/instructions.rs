@@ -49,7 +49,7 @@ pub struct EnterPool<'info> {
     #[account(
         init_if_needed,
         payer = entrant,
-        space = 8 + 32 + 8 + 1, // 8 bytes for discriminator, 32 bytes for entrant pubkey, 8 bytes for value, 1 byte for bool is_claimed
+        space = 8 + 8 + 1, // 8 bytes for discriminator, 8 bytes for value, 1 byte for bool is_claimed
         seeds = [
             option_account.key().as_ref(),
             entrant.key().as_ref(),
