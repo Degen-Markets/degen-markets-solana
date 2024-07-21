@@ -33,7 +33,7 @@ describe('Wins claiming', () => {
            expect(e.message).to.include('EntryAlreadyClaimed');
        }
    });
-   it("should not let a user claim using someone else's entry account", () => {});
+   it("should not let a user claim using someone else's entry account", async () => {});
    it('should not let a user claim if they did not win', () => {});
    it('should not let a user claim twice', () => {});
    it("should claim the user's share of the win", async () => {

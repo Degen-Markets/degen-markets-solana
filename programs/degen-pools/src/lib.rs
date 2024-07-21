@@ -103,7 +103,11 @@ pub mod degen_pools {
         if entry_account.is_claimed {
             return err!(CustomError::EntryAlreadyClaimed);
         }
+        let signer_account = &ctx.accounts.winner;
         let option_account = &ctx.accounts.option_account;
+        if entry_account.entrant != signer_account.key() {
+            return err!(CustomError::EntryNotOwnedBySigner);
+        }
         let pool_account = &ctx.accounts.pool_account;
         entry_account.is_claimed = true;
         let win_share_value = (pool_account.value * 100)/option_account.value;

@@ -12,4 +12,8 @@ pub enum CustomError {
     EntryDoesNotMatchHash,
     #[msg("Entry already claimed!")]
     EntryAlreadyClaimed,
+    #[msg("Entry is not yours!")]
+    EntryNotOwnedBySigner,
+    #[msg("Entry did not win")]
+    LosingEntry,
 }
