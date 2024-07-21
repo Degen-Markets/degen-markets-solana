@@ -1,5 +1,5 @@
 import {generateKeypair, getLocalAccount} from "./utils/keypairs";
-import {createPool} from "./utils/pools";
+import {concludePool, createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {program, provider} from "./utils/constants";
 import BN from 'bn.js';
@@ -29,14 +29,7 @@ describe('Pool Entry', () => {
         const optionTitle = "Popcat";
         const { poolAccountKey } = await createPool(title, adminWallet);
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
-        await program.methods
-            .concludePool(optionAccountKey)
-            .accounts({
-                poolAccount: poolAccountKey,
-                admin: adminWallet.publicKey,
-            })
-            .signers([adminWallet])
-            .rpc();
+        await concludePool(optionAccountKey, poolAccountKey, adminWallet);
         try {
             await enterPool(poolAccountKey, optionAccountKey, userWallet, new BN(100_000));
         } catch (e) {

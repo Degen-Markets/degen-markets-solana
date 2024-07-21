@@ -31,3 +31,16 @@ export const createPool = async (title: string, keypair: anchor.web3.Keypair) =>
         poolAccountData,
     }
 };
+
+export const concludePool = async (
+    optionAccountKey: anchor.web3.PublicKey,
+    poolAccountKey: anchor.web3.PublicKey,
+    adminWallet: anchor.web3.Keypair
+) => program.methods
+        .concludePool(optionAccountKey)
+        .accounts({
+            poolAccount: poolAccountKey,
+            admin: adminWallet.publicKey,
+        })
+        .signers([adminWallet])
+        .rpc();

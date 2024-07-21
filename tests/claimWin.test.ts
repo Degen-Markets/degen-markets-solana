@@ -1,5 +1,5 @@
 import {generateKeypair, getLocalAccount} from "./utils/keypairs";
-import {createPool} from "./utils/pools";
+import {concludePool, createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
@@ -16,14 +16,7 @@ describe('Wins claiming', () => {
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
 
-       await program.methods
-           .concludePool(optionAccountKey)
-           .accounts({
-               poolAccount: poolAccountKey,
-               admin: adminWallet.publicKey,
-           })
-           .signers([adminWallet])
-           .rpc();
+       await concludePool(optionAccountKey, poolAccountKey, adminWallet);
 
        await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
 
@@ -33,7 +26,24 @@ describe('Wins claiming', () => {
            expect(e.message).to.include('EntryAlreadyClaimed');
        }
    });
-   it("should not let a user claim using someone else's entry account", async () => {});
+   it("should not let a user claim using someone else's entry account", async () => {
+       const title = "Which will be the biggest meme coin on Solana by the end of May 2025?";
+       const optionTitle = "WIF";
+       const adminWallet = await getLocalAccount();
+       const user = await generateKeypair();
+       const user1 = await generateKeypair();
+       const { poolAccountKey } = await createPool(title, adminWallet);
+       const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
+       const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
+
+       await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+
+       try {
+           await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1);
+       } catch (e) {
+           expect(e.message).to.include('EntryNotOwnedBySigner');
+       }
+   });
    it('should not let a user claim if they did not win', () => {});
    it('should not let a user claim twice', () => {});
    it("should claim the user's share of the win", async () => {
@@ -51,14 +61,7 @@ describe('Wins claiming', () => {
       const { entryAccountKey: entry1AccountKey} = await enterPool(poolAccountKey, optionAccountKey, user1, new BN(1_000));
       await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10_000));
 
-      await program.methods
-          .concludePool(optionAccountKey)
-          .accounts({
-             poolAccount: poolAccountKey,
-             admin: adminWallet.publicKey,
-          })
-          .signers([adminWallet])
-          .rpc();
+      await concludePool(optionAccountKey, poolAccountKey, adminWallet);
 
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
       await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
