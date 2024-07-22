@@ -84,5 +84,30 @@ pub struct ClaimWin<'info> {
     pub entry_account: Account<'info, Entry>,
     #[account(mut)]
     pub option_account: Account<'info, PoolOption>,
-    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CloseEntryAccount<'info> {
+    #[account(mut, signer)]
+    pub entrant: Signer<'info>,
+    #[account(mut, close = entrant)]
+    pub entry_account: Account<'info, Entry>,
+    #[account()]
+    pub option_account: Account<'info, PoolOption>,
+}
+
+#[derive(Accounts)]
+pub struct CloseOptionAccount<'info> {
+    #[account(mut, signer, address = AUTHORITY_PUBKEY)]
+    pub admin: Signer<'info>,
+    #[account(mut, close = admin)]
+    pub option_account: Account<'info, PoolOption>
+}
+
+#[derive(Accounts)]
+pub struct ClosePoolAccount<'info> {
+    #[account(mut, signer, address = AUTHORITY_PUBKEY)]
+    pub admin: Signer<'info>,
+    #[account(mut, close = admin)]
+    pub pool_account: Account<'info, Pool>
 }

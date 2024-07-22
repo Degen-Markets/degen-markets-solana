@@ -132,4 +132,28 @@ pub mod degen_pools {
         **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
         Ok(())
     }
+
+    pub fn close_entry_account(ctx: Context<CloseEntryAccount>) -> Result<()> {
+        let signer_account = &ctx.accounts.entrant;
+        let option_account = &ctx.accounts.option_account;
+        let entry_account = &mut ctx.accounts.entry_account;
+        let (derived_entry_account_key, _entry_account_bump) = Pubkey::find_program_address(
+            &[&option_account.key().to_bytes(), &signer_account.key().to_bytes()],
+            ctx.program_id
+        );
+
+        if derived_entry_account_key != entry_account.key() {
+            return err!(CustomError::EntryNotDerivedFromOptionOrSigner)
+        }
+
+        Ok(())
+    }
+
+    pub fn close_option_account(_ctx: Context<CloseOptionAccount>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn close_pool_account(_ctx: Context<ClosePoolAccount>) -> Result<()> {
+        Ok(())
+    }
 }

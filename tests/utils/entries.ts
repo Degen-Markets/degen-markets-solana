@@ -47,7 +47,6 @@ export const claimWin = async (
             optionAccount: optionAccountKey,
             entryAccount: entryAccountKey,
             winner: winnerKeypair.publicKey,
-            systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([winnerKeypair])
         .rpc();
