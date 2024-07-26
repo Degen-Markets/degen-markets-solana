@@ -9,7 +9,6 @@ export const derivePoolAccountKey = async (title: string) => {
         ],
         program.programId
     );
-    console.log(`Derived pool account is ${pda}`);
     return pda;
 };
 export const createPool = async (title: string, keypair: anchor.web3.Keypair) => {

@@ -26,7 +26,6 @@ export const getLocalAccount = async () => {
     const keypairPath = await yaml.parse(configYml).keypair_path;
     const localKeypair = createKeypairFromFile(keypairPath);
 
-    console.log(`Local account loaded successfully: ${localKeypair.publicKey}`);
     return localKeypair;
 };
 
@@ -36,6 +35,6 @@ export const generateKeypair = async () => {
         keypair.publicKey,
         2 * anchor.web3.LAMPORTS_PER_SOL
     );
-    await new Promise( resolve => setTimeout(resolve, 3 * 1000) ); // Sleep 3s
+    await new Promise( resolve => setTimeout(resolve, 1000) ); // Sleep 1s
     return keypair;
 }

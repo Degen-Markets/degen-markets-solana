@@ -4,13 +4,13 @@ use anchor_lang::solana_program::pubkey::Pubkey;
 
 pub use instructions::*;
 pub use state::*;
-pub use errors::CustomError;
+pub use error::CustomError;
 
 mod instructions;
 mod state;
-mod errors;
+mod error;
 
-declare_id!("Dxu2ai95cXLi4xUK5hdyz2zC7xvGpThiQo9822MBX4iA");
+declare_id!("5nxUTpb7KpQU3jPvKDtpxT1wYu13ffMQCKLyxKXUNa4Z");
 
 #[program]
 pub mod degen_pools {

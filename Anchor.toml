@@ -5,7 +5,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-degen_pools = "Dxu2ai95cXLi4xUK5hdyz2zC7xvGpThiQo9822MBX4iA"
+degen_pools = "5nxUTpb7KpQU3jPvKDtpxT1wYu13ffMQCKLyxKXUNa4Z"
+
+[programs.devnet]
+degen_pools = "5nxUTpb7KpQU3jPvKDtpxT1wYu13ffMQCKLyxKXUNa4Z"
 
 [registry]
 url = "https://api.apr.dev"

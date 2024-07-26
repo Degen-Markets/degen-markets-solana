@@ -5,7 +5,6 @@ import {expect} from "chai";
 import {getTitleHash} from "./utils/cryptography";
 import {program} from "./utils/constants";
 import {createPool, derivePoolAccountKey} from "./utils/pools";
-import BN from "bn.js";
 
 dotenv.config();
 

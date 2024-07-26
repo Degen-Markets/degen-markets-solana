@@ -10,7 +10,6 @@ export const deriveEntryAccountKey = async (optionAccountKey: anchor.web3.Public
       ],
       program.programId
   );
-    console.log(`Derived entry account is ${pda}`);
     return pda;
 };
 
@@ -49,5 +48,22 @@ export const claimWin = async (
             winner: winnerKeypair.publicKey,
         })
         .signers([winnerKeypair])
+        .rpc();
+};
+
+export const closeEntry = async(
+    entryAccountKey: anchor.web3.PublicKey,
+    optionAccountKey: anchor.web3.PublicKey,
+    entrantKeypair: anchor.web3.Keypair
+) => {
+    await program
+        .methods
+        .closeEntryAccount()
+        .accounts({
+            entryAccount: entryAccountKey,
+            entrant: entrantKeypair.publicKey,
+            optionAccount: optionAccountKey,
+        })
+        .signers([entrantKeypair])
         .rpc();
 };

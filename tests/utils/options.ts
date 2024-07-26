@@ -9,7 +9,6 @@ export const deriveOptionAccountKey = async (title: string, poolAccountKey: anch
         ],
         program.programId
     );
-    console.log(`Derived option account is ${pda}`);
     return pda;
 };
 
