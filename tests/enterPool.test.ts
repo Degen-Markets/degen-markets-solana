@@ -15,9 +15,15 @@ describe('Pool Entry', () => {
         const optionTitle = "Yes";
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         const value = new BN(123);
-        const { entryAccountKey, entryAccountData } = await enterPool(poolAccountKey, optionAccountKey, userWallet, value);
+        const poolEnteredEvents = [];
+        const listener = program.addEventListener('poolEntered', (event) => {
+            poolEnteredEvents.push(event);
+        });
+        const { entryAccountData } = await enterPool(poolAccountKey, optionAccountKey, userWallet, value);
+        await program.removeEventListener(listener);
         expect(entryAccountData.value.sub(value)).to.eql(new BN(0));
         expect(entryAccountData.isClaimed).to.eql(false);
+        expect(poolEnteredEvents.length).to.eql(1);
     });
 
     it('should throw a custom error if user tries to enter a pool that is concluded', async () => {

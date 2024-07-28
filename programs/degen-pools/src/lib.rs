@@ -5,12 +5,14 @@ use anchor_lang::solana_program::pubkey::Pubkey;
 pub use instructions::*;
 pub use state::*;
 pub use error::CustomError;
+pub use events::*;
 
 mod instructions;
 mod state;
 mod error;
+mod events;
 
-declare_id!("5nxUTpb7KpQU3jPvKDtpxT1wYu13ffMQCKLyxKXUNa4Z");
+declare_id!("7LBg3mDNHNrRzowMdHTHbkso8BPie1xSm4EMLVPadMbu");
 
 #[program]
 pub mod degen_pools {
@@ -21,12 +23,10 @@ pub mod degen_pools {
         title: String,
         title_hash: [u8; 32],
     ) -> Result<()> {
-        msg!("Creating pool for {} with hash {:?}", title, title_hash);
         if hash(&title.as_bytes()).to_bytes() != title_hash {
             return err!(CustomError::TitleDoesNotMatchHash);
         }
         let pool_account = &mut ctx.accounts.pool_account;
-        msg!("Received key {} for pool account", pool_account.key());
         pool_account.title = title;
         pool_account.has_concluded = false;
         pool_account.winning_option = Pubkey::default();
@@ -39,7 +39,6 @@ pub mod degen_pools {
         option_title: String,
         option_hash: [u8; 32],
     ) -> Result<()> {
-        msg!("Creating option for {}", option_title);
         let mut derived_option_input = ctx.accounts.pool_account.key().to_string().to_owned();
         // Concatenate bytes using the concat method
         derived_option_input.push_str(&option_title);
@@ -47,7 +46,6 @@ pub mod degen_pools {
         let option_hash_hex = hex::encode(option_hash);
         let derived_option_hash = hash(derived_option_input.as_bytes());
 
-        msg!("Comparing derived hash {} with option_hash input: {}", derived_option_hash, option_hash_hex);
         if derived_option_hash.to_bytes() != option_hash {
             return err!(CustomError::PoolOptionDoesNotMatchHash);
         }
@@ -88,6 +86,12 @@ pub mod degen_pools {
             ],
         )?;
 
+        emit!(PoolEntered {
+            pool: ctx.accounts.pool_account.key(),
+            option: ctx.accounts.option_account.key(),
+            entry: ctx.accounts.entry_account.key(),
+            value,
+        });
         Ok(())
     }
 
@@ -122,11 +126,7 @@ pub mod degen_pools {
 
         entry_account.is_claimed = true;
         let win_share_value = (pool_account.value * 100)/option_account.value;
-        msg!("1 Win Share value is: {}", win_share_value);
-        msg!("Option account value is {}, Entry account value is: {}", option_account.value, entry_account.value);
-        msg!("User has {} of these shares", entry_account.value);
         let win_amount = (entry_account.value * win_share_value)/100;
-        msg!("Win amount for user is: {}", win_amount);
         // Transfer SOL from pool to winner
         **ctx.accounts.pool_account.to_account_info().try_borrow_mut_lamports()? -= win_amount;
         **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
