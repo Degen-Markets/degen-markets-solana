@@ -12,7 +12,7 @@ mod state;
 mod error;
 mod events;
 
-declare_id!("7LBg3mDNHNrRzowMdHTHbkso8BPie1xSm4EMLVPadMbu");
+declare_id!("2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ");
 
 #[program]
 pub mod degen_pools {
@@ -28,7 +28,7 @@ pub mod degen_pools {
         }
         let pool_account = &mut ctx.accounts.pool_account;
         pool_account.title = title;
-        pool_account.has_concluded = false;
+        pool_account.is_paused = false;
         pool_account.winning_option = Pubkey::default();
         pool_account.value = 0;
         Ok(())
@@ -43,7 +43,6 @@ pub mod degen_pools {
         // Concatenate bytes using the concat method
         derived_option_input.push_str(&option_title);
 
-        let option_hash_hex = hex::encode(option_hash);
         let derived_option_hash = hash(derived_option_input.as_bytes());
 
         if derived_option_hash.to_bytes() != option_hash {
@@ -60,8 +59,8 @@ pub mod degen_pools {
         value: u64,
     ) -> Result<()> {
         let pool_account = &mut ctx.accounts.pool_account;
-        if pool_account.has_concluded {
-            return err!(CustomError::PoolConcluded);
+        if pool_account.is_paused {
+            return err!(CustomError::PoolStateIncompatible);
         }
         pool_account.value += value;
 
@@ -95,9 +94,17 @@ pub mod degen_pools {
         Ok(())
     }
 
-    pub fn conclude_pool(ctx: Context<ConcludePool>, winning_option: Pubkey) -> Result<()> {
+    pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
         let pool_account = &mut ctx.accounts.pool_account;
-        pool_account.has_concluded = true;
+        pool_account.is_paused = is_paused;
+        Ok(())
+    }
+
+    pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> Result<()> {
+        let pool_account = &mut ctx.accounts.pool_account;
+        if !pool_account.is_paused {
+            return err!(CustomError::PoolStateIncompatible);
+        }
         pool_account.winning_option = winning_option;
         Ok(())
     }
@@ -130,30 +137,6 @@ pub mod degen_pools {
         // Transfer SOL from pool to winner
         **ctx.accounts.pool_account.to_account_info().try_borrow_mut_lamports()? -= win_amount;
         **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
-        Ok(())
-    }
-
-    pub fn close_entry_account(ctx: Context<CloseEntryAccount>) -> Result<()> {
-        let signer_account = &ctx.accounts.entrant;
-        let option_account = &ctx.accounts.option_account;
-        let entry_account = &mut ctx.accounts.entry_account;
-        let (derived_entry_account_key, _entry_account_bump) = Pubkey::find_program_address(
-            &[&option_account.key().to_bytes(), &signer_account.key().to_bytes()],
-            ctx.program_id
-        );
-
-        if derived_entry_account_key != entry_account.key() {
-            return err!(CustomError::EntryNotDerivedFromOptionOrSigner)
-        }
-
-        Ok(())
-    }
-
-    pub fn close_option_account(_ctx: Context<CloseOptionAccount>) -> Result<()> {
-        Ok(())
-    }
-
-    pub fn close_pool_account(_ctx: Context<ClosePoolAccount>) -> Result<()> {
         Ok(())
     }
 }

@@ -14,7 +14,7 @@ describe("Pool Creation", () => {
         const title = "Who will win the US Elections?";
         const { poolAccountData } = await createPool(title, authorityKeypair);
         expect(poolAccountData.title).to.eql(title);
-        expect(poolAccountData.hasConcluded).to.eql(false);
+        expect(poolAccountData.isPaused).to.eql(false);
         expect(poolAccountData.winningOption).to.eql(anchor.web3.SystemProgram.programId);
         expect(Number(poolAccountData.value)).to.eql(0);
     });

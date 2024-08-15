@@ -50,20 +50,3 @@ export const claimWin = async (
         .signers([winnerKeypair])
         .rpc();
 };
-
-export const closeEntry = async(
-    entryAccountKey: anchor.web3.PublicKey,
-    optionAccountKey: anchor.web3.PublicKey,
-    entrantKeypair: anchor.web3.Keypair
-) => {
-    await program
-        .methods
-        .closeEntryAccount()
-        .accounts({
-            entryAccount: entryAccountKey,
-            entrant: entrantKeypair.publicKey,
-            optionAccount: optionAccountKey,
-        })
-        .signers([entrantKeypair])
-        .rpc();
-};

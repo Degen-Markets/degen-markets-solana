@@ -1,5 +1,5 @@
 import {generateKeypair, getLocalAccount} from "./utils/keypairs";
-import {concludePool, createPool} from "./utils/pools";
+import {pausePool, createPool, setWinningOption} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
@@ -16,7 +16,8 @@ describe('Wins claiming', () => {
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
 
-       await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+       await pausePool(true, poolAccountKey, adminWallet);
+       await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
        await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
 
@@ -24,7 +25,7 @@ describe('Wins claiming', () => {
            await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
        } catch (e) {
            // account deleted after a successful win claim
-           expect(e.message).to.include('AccountNotInitialized');
+           expect(e.message).to.include('EntryAlreadyClaimed');
        }
    });
    it("should not let a user claim using someone else's entry account", async () => {
@@ -37,7 +38,8 @@ describe('Wins claiming', () => {
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
 
-       await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+       await pausePool(true, poolAccountKey, adminWallet);
+       await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
        try {
            await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1);
@@ -48,6 +50,7 @@ describe('Wins claiming', () => {
        // ensure account is not deleted after failed claim win (no exception is thrown)
        await program.account.entry.fetch(entryAccountKey);
    });
+
    it('should not let a user claim if they did not win', async () => {
        const title = "Will we get a SOL ETF by the end of 2024?";
        const optionTitle = "No";
@@ -63,7 +66,8 @@ describe('Wins claiming', () => {
        const { entryAccountKey: wrongOptionEntryKey} = await enterPool(poolAccountKey, wrongOptionAccountKey, user1, new BN(1_000));
        await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10_000));
 
-       await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+       await pausePool(true, poolAccountKey, adminWallet);
+       await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
        try {
            await claimWin(poolAccountKey, wrongOptionAccountKey, entryAccountKey, user);
@@ -77,9 +81,7 @@ describe('Wins claiming', () => {
            expect(e.message).to.include('EntryNotDerivedFromOptionOrSigner');
        }
    });
-   it('should not let a user claim a pool that has not concluded', () => {
-       // test not needed: it is the same test as checking if the provided option is the pool_account.winning_option
-   });
+
    it("should claim the user's share of the win", async () => {
       const title = "Will ETH market cap over take Bitcoin's market cap?";
       const optionTitle = "Yes";
@@ -95,7 +97,8 @@ describe('Wins claiming', () => {
       const { entryAccountKey: entry1AccountKey} = await enterPool(poolAccountKey, optionAccountKey, user1, new BN(1_000));
       await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10_000));
 
-      await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+      await pausePool(true, poolAccountKey, adminWallet);
+      await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
       await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);

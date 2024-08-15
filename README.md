@@ -6,3 +6,7 @@
 4. Once done, run `anchor deploy`. Optional: to see logs, run `solana logs` after
 5. To test, run `anchor run test`
 6. Running `anchor run test` again may result in some failing tests as the pools/options have already been created on the local network. So you will need to reset your local network (step 1).
+
+# TODO:
+- ?transfer SOL to winning accounts (pay_winners function)
+- ?improve; use title hash + pool key instead option_hash in create_option

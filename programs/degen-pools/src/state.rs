@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct Pool {
     pub title: String,
-    pub has_concluded: bool,
+    pub is_paused: bool,
     pub winning_option: Pubkey,
     pub value: u64,
 }

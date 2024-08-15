@@ -28,15 +28,29 @@ export const createPool = async (title: string, keypair: anchor.web3.Keypair) =>
     return {
         poolAccountKey,
         poolAccountData,
-    }
+    };
 };
 
-export const concludePool = async (
-    optionAccountKey: anchor.web3.PublicKey,
+export const pausePool = async (
+    isPaused: boolean,
     poolAccountKey: anchor.web3.PublicKey,
     adminWallet: anchor.web3.Keypair
 ) => program.methods
-        .concludePool(optionAccountKey)
+        .setIsPaused(isPaused)
+        .accounts({
+            poolAccount: poolAccountKey,
+            admin: adminWallet.publicKey,
+        })
+        .signers([adminWallet])
+        .rpc();
+
+export const setWinningOption = async (
+    poolAccountKey: anchor.web3.PublicKey,
+    optionAccountKey: anchor.web3.PublicKey,
+    adminWallet: anchor.web3.Keypair
+)=>
+    program.methods
+        .setWinningOption(optionAccountKey)
         .accounts({
             poolAccount: poolAccountKey,
             admin: adminWallet.publicKey,

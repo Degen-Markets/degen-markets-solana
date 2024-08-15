@@ -1,5 +1,5 @@
 import {generateKeypair, getLocalAccount} from "./utils/keypairs";
-import {concludePool, createPool} from "./utils/pools";
+import {pausePool, createPool} from "./utils/pools";
 import {createOption} from "./utils/options";
 import {program, provider} from "./utils/constants";
 import BN from 'bn.js';
@@ -17,7 +17,7 @@ describe('Pool Entry', () => {
         const value = new BN(123);
         const poolEnteredEvents = [];
         const listener = program.addEventListener('poolEntered', (event) => {
-            poolEnteredEvents.push(event);
+            if (event.pool.toString() === poolAccountKey.toString()) poolEnteredEvents.push(event);
         });
         const { entryAccountData } = await enterPool(poolAccountKey, optionAccountKey, userWallet, value);
         await program.removeEventListener(listener);
@@ -26,18 +26,18 @@ describe('Pool Entry', () => {
         expect(poolEnteredEvents.length).to.eql(1);
     });
 
-    it('should throw a custom error if user tries to enter a pool that is concluded', async () => {
+    it('should throw a custom error if user tries to enter a pool that is paused', async () => {
         const adminWallet = await getLocalAccount();
         const userWallet = await generateKeypair();
         const title = "Which of these cat memecoins reach $1 Billion first?";
         const optionTitle = "Popcat";
         const { poolAccountKey } = await createPool(title, adminWallet);
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
-        await concludePool(optionAccountKey, poolAccountKey, adminWallet);
+        await pausePool(true, poolAccountKey, adminWallet);
         try {
             await enterPool(poolAccountKey, optionAccountKey, userWallet, new BN(100_000));
         } catch (e) {
-            expect(e.message).to.include('PoolConcluded');
+            expect(e.message).to.include('PoolStateIncompatible');
         }
     });
 
