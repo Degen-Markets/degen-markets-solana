@@ -6,7 +6,8 @@ If you are building the project for the first time, you will have errors deployi
 keypair for the program will result in a different public key. Therefore, the public key should be replaced in lib.rs.
 Here's how to do it:
 
-1. Run `anchor keys list`, this will output a new public key
+1. Run `solana-keygen new` to create a local wallet for development
+2. Run `anchor keys list`, this will output a new public key for your program
 2. Use this new public key and replace it with the key in [lib.rs](https://github.com/Degen-Markets/degen-markets-solana/blob/master/programs/degen-pools/src/lib.rs#L15)
 3. Use this new public key and replace it in [Anchor.toml](https://github.com/Degen-Markets/degen-markets-solana/blob/master/Anchor.toml) for the network you are deploying to
 4. Now you can continue with the steps in the [next section](#running-after-the-first-build)
