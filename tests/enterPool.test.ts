@@ -5,6 +5,7 @@ import {program, provider} from "./utils/constants";
 import BN from 'bn.js';
 import {deriveEntryAccountKey, enterPool} from "./utils/entries";
 import {expect} from "chai";
+import { IdlEvents } from "@coral-xyz/anchor";
 
 describe('Pool Entry', () => {
     it('should let a user enter on an active pool', async () => {
@@ -15,15 +16,21 @@ describe('Pool Entry', () => {
         const optionTitle = "Yes";
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         const value = new BN(123);
-        const poolEnteredEvents = [];
-        const listener = program.addEventListener('poolEntered', (event) => {
-            if (event.pool.toString() === poolAccountKey.toString()) poolEnteredEvents.push(event);
-        });
+        let listener: ReturnType<typeof program['addEventListener']>;
+        const poolEnteredListenerPromise 
+          = new Promise<IdlEvents<typeof program.idl>['poolEntered']>(res => {
+            listener = program.addEventListener('poolEntered', (event) => {
+              res(event);
+            });
+          });
         const { entryAccountData } = await enterPool(poolAccountKey, optionAccountKey, userWallet, value);
+        const event = await poolEnteredListenerPromise;
         await program.removeEventListener(listener);
+        
+        expect(event.pool.toString()).to.eq(poolAccountKey.toString())
+        expect(event.entrant.toString()).to.eq(userWallet.publicKey.toString());
         expect(entryAccountData.value.sub(value)).to.eql(new BN(0));
         expect(entryAccountData.isClaimed).to.eql(false);
-        expect(poolEnteredEvents.length).to.eql(1);
     });
 
     it('should throw a custom error if user tries to enter a pool that is paused', async () => {
