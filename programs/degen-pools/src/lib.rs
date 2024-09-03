@@ -89,6 +89,7 @@ pub mod degen_pools {
             pool: ctx.accounts.pool_account.key(),
             option: ctx.accounts.option_account.key(),
             entry: ctx.accounts.entry_account.key(),
+            entrant: ctx.accounts.entrant.key(),
             value,
         });
         Ok(())
