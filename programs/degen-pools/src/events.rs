@@ -6,4 +6,5 @@ pub struct PoolEntered {
     pub option: Pubkey,
     pub entry: Pubkey,
     pub value: u64,
+    pub entrant: Pubkey,
 }
