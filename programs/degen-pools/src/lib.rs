@@ -2,15 +2,16 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 use anchor_lang::solana_program::pubkey::Pubkey;
 
-pub use instructions::*;
-pub use state::*;
-pub use error::CustomError;
-pub use events::*;
+pub use errors::CustomError;
+pub use pools::*;
+pub use entries::*;
+pub use pool_options::*;
 
-mod instructions;
-mod state;
-mod error;
-mod events;
+mod errors;
+mod pools;
+mod constants;
+mod entries;
+mod pool_options;
 
 declare_id!("2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ");
 
@@ -22,16 +23,14 @@ pub mod degen_pools {
         ctx: Context<CreatePool>,
         title: String,
         title_hash: [u8; 32],
-    ) -> Result<()> {
-        if hash(&title.as_bytes()).to_bytes() != title_hash {
-            return err!(CustomError::TitleDoesNotMatchHash);
-        }
-        let pool_account = &mut ctx.accounts.pool_account;
-        pool_account.title = title;
-        pool_account.is_paused = false;
-        pool_account.winning_option = Pubkey::default();
-        pool_account.value = 0;
-        Ok(())
+    ) -> Result<()> { pools::create_pool(ctx, title, title_hash) }
+
+    pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
+        pools::set_is_paused(ctx, is_paused)
+    }
+
+    pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> Result<()> {
+        pools::set_winning_option(ctx, winning_option)
     }
 
     pub fn create_option(
@@ -39,105 +38,17 @@ pub mod degen_pools {
         option_title: String,
         option_hash: [u8; 32],
     ) -> Result<()> {
-        let mut derived_option_input = ctx.accounts.pool_account.key().to_string().to_owned();
-        // Concatenate bytes using the concat method
-        derived_option_input.push_str(&option_title);
-
-        let derived_option_hash = hash(derived_option_input.as_bytes());
-
-        if derived_option_hash.to_bytes() != option_hash {
-            return err!(CustomError::PoolOptionDoesNotMatchHash);
-        }
-        let option_account = &mut ctx.accounts.option_account;
-        option_account.title = option_title;
-        option_account.value = 0;
-        Ok(())
+        pool_options::create_option(ctx, option_title, option_hash)
     }
 
     pub fn enter_pool(
         ctx: Context<EnterPool>,
         value: u64,
     ) -> Result<()> {
-        let pool_account = &mut ctx.accounts.pool_account;
-        if pool_account.is_paused {
-            return err!(CustomError::PoolStateIncompatible);
-        }
-        pool_account.value += value;
-
-        let entry_account = &mut ctx.accounts.entry_account;
-        entry_account.value += value;
-        entry_account.is_claimed = false;
-
-        let option_account = &mut ctx.accounts.option_account;
-        option_account.value += value;
-
-        // Transfer SOL from entrant to treasury
-        let ix = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.entrant.key(),
-            &ctx.accounts.pool_account.key(),
-            value,
-        );
-        anchor_lang::solana_program::program::invoke(
-            &ix,
-            &[
-                ctx.accounts.entrant.to_account_info(),
-                ctx.accounts.pool_account.to_account_info(),
-            ],
-        )?;
-
-        emit!(PoolEntered {
-            pool: ctx.accounts.pool_account.key(),
-            option: ctx.accounts.option_account.key(),
-            entry: ctx.accounts.entry_account.key(),
-            entrant: ctx.accounts.entrant.key(),
-            value,
-        });
-        Ok(())
-    }
-
-    pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
-        let pool_account = &mut ctx.accounts.pool_account;
-        pool_account.is_paused = is_paused;
-        Ok(())
-    }
-
-    pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> Result<()> {
-        let pool_account = &mut ctx.accounts.pool_account;
-        if !pool_account.is_paused {
-            return err!(CustomError::PoolStateIncompatible);
-        }
-        pool_account.winning_option = winning_option;
-        Ok(())
+        entries::enter_pool(ctx, value)
     }
 
     pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
-        let entry_account = &mut ctx.accounts.entry_account;
-        if entry_account.is_claimed {
-            return err!(CustomError::EntryAlreadyClaimed);
-        }
-        let signer_account = &ctx.accounts.winner;
-        let pool_account = &ctx.accounts.pool_account;
-        let option_account = &ctx.accounts.option_account;
-
-        if pool_account.winning_option != option_account.key() {
-            return err!(CustomError::LosingOption);
-        }
-
-        let (derived_entry_account_key, _entry_account_bump) = Pubkey::find_program_address(
-            &[&option_account.key().to_bytes(), &signer_account.key().to_bytes()],
-            ctx.program_id
-        );
-
-        if derived_entry_account_key != entry_account.key() {
-            return err!(CustomError::EntryNotDerivedFromOptionOrSigner)
-        }
-
-        entry_account.is_claimed = true;
-        let win_share_value = (pool_account.value * 100)/option_account.value;
-        let win_amount = (entry_account.value * win_share_value)/100;
-        // Transfer SOL from pool to winner
-        **ctx.accounts.pool_account.to_account_info().try_borrow_mut_lamports()? -= win_amount;
-        **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
-        Ok(())
+        entries::claim_win(ctx)
     }
 }

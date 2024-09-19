@@ -23,5 +23,8 @@ Here's how to do it:
 5. Running `anchor run test` again may result in some failing tests as the pools/options have already been created on the local network. So you will need to reset your local network (step 1).
 
 # TODO:
-- ?transfer SOL to winning accounts (pay_winners function)
-- ?improve; use title hash + pool key instead option_hash in create_option
+- PDA to store pool creation price
+- PoolCreated event (description, title, image, options)
+- OptionCreated event
+- PoolCustody account to store SOL, creator
+- burnPool function; transfer SOL to admin key
