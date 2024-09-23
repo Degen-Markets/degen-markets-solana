@@ -50,7 +50,7 @@ pub fn create_pool(
 
     emit!(PoolCreated {
         pool_account: pool_account.key(),
-        &title,
+        title,
         image_url,
         description,
     });

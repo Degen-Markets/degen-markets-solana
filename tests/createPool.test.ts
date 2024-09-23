@@ -15,7 +15,7 @@ describe("Pool Creation", () => {
         const imageUrl = "https://example.com/image.png";
         const description = "This is a pool to guess the winner of the US elections.";
 
-        const { poolAccountData, poolCreatedEvent } = await createPool(
+        const { poolAccountData, poolCreatedEvent, poolAccountKey } = await createPool(
             title, authorityKeypair, imageUrl, description
         );
 
@@ -24,9 +24,9 @@ describe("Pool Creation", () => {
         expect(poolAccountData.winningOption).to.eql(anchor.web3.SystemProgram.programId);
         expect(Number(poolAccountData.value)).to.eql(0);
 
-        expect(poolCreatedEvent.pool_account).to.eql(poolAccountData.pubkey);
+        expect(poolCreatedEvent.poolAccount).to.eql(poolAccountKey);
         expect(poolCreatedEvent.title).to.eql(title);
-        expect(poolCreatedEvent.image_url).to.eql(imageUrl);
+        expect(poolCreatedEvent.imageUrl).to.eql(imageUrl);
         expect(poolCreatedEvent.description).to.eql(description);
     });
 

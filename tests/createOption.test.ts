@@ -18,9 +18,11 @@ describe("Option Creation", () => {
     it('should succeed if hash is correct & fails with custom error if incorrect', async () => {
         const authorityKeypair = await getLocalAccount();
         const title = "Who will win the 2024 Euros?";
-        const { poolAccountKey } = await createPool(title, authorityKeypair);
+        const imageUrl = "https://example.com/image.png";
+        const description = "This is a pool to guess the winner of the US elections.";
+        const { poolAccountKey } = await createPool(title, authorityKeypair, imageUrl, description);
         const optionTitle = "England";
-        const { optionAccountKey, optionAccountData } = await createOption(optionTitle, authorityKeypair, poolAccountKey);
+        const { optionAccountData } = await createOption(optionTitle, authorityKeypair, poolAccountKey);
         expect(optionAccountData.title).to.eql(optionTitle);
 
         const optionTwo = "Spain";
@@ -45,7 +47,9 @@ describe("Option Creation", () => {
         const authorityKeypair = await getLocalAccount();
         const title = "What was the nature of the Trump assassination?";
         const optionTitle = "Lone Wolf";
-        const { poolAccountKey } = await createPool(title, authorityKeypair)
+        const imageUrl = "https://example.com/image.png";
+        const description = "This is a pool to guess the winner of the US elections.";
+        const { poolAccountKey } = await createPool(title, authorityKeypair, imageUrl, description)
         try {
             await createOption(optionTitle, randomKeypair, poolAccountKey);
         } catch (e) {

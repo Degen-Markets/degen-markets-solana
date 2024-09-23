@@ -23,7 +23,9 @@ pub mod degen_pools {
         ctx: Context<CreatePool>,
         title: String,
         title_hash: [u8; 32],
-    ) -> Result<()> { pools::create_pool(ctx, title, title_hash) }
+        image_url: String,
+        description: String,
+    ) -> Result<()> { pools::create_pool(ctx, title, title_hash, image_url, description) }
 
     pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
         pools::set_is_paused(ctx, is_paused)
