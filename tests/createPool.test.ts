@@ -5,6 +5,7 @@ import { expect } from "chai";
 import { getTitleHash } from "./utils/cryptography";
 import { program } from "./utils/constants";
 import { createPool, derivePoolAccountKey } from "./utils/pools";
+import {IdlEvents} from "@coral-xyz/anchor";
 
 dotenv.config();
 
@@ -15,9 +16,21 @@ describe("Pool Creation", () => {
         const imageUrl = "https://example.com/image.png";
         const description = "This is a pool to guess the winner of the US elections.";
 
-        const { poolAccountData, poolCreatedEvent, poolAccountKey } = await createPool(
+
+        let listener: ReturnType<typeof program['addEventListener']>;
+
+        const poolCreatedListenerPromise
+            = new Promise<IdlEvents<typeof program.idl>['poolCreated']>(res => {
+            listener = program.addEventListener('poolCreated', (event) => {
+                res(event);
+            });
+        });
+
+        const { poolAccountData, poolAccountKey } = await createPool(
             title, authorityKeypair, imageUrl, description
         );
+        const poolCreatedEvent = await poolCreatedListenerPromise;
+        await program.removeEventListener(listener);
 
         expect(poolAccountData.title).to.eql(title);
         expect(poolAccountData.isPaused).to.eql(false);

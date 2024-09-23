@@ -1,7 +1,6 @@
 import { program } from "./constants";
 import { getBytesFromHashedStr, getTitleHash } from "./cryptography";
 import * as anchor from "@coral-xyz/anchor";
-import {IdlEvents} from "@coral-xyz/anchor";
 
 export const derivePoolAccountKey = async (title: string) => {
     const [pda] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -27,18 +26,7 @@ export const createPool = async (
 
     const poolAccountKey = await derivePoolAccountKey(title);
 
-    let listener: ReturnType<typeof program['addEventListener']>;
 
-    const poolCreatedListenerPromise
-        = new Promise<IdlEvents<typeof program.idl>['poolCreated']>(res => {
-        listener = program.addEventListener('poolCreated', (event) => {
-            console.log(event.poolAccount);
-            console.log(poolAccountKey);
-            if (event.poolAccount === poolAccountKey) {
-                res(event);
-            }
-        });
-    });
 
     await program.methods
         .createPool(title, getTitleHash(title), imageUrl, description)
@@ -51,13 +39,11 @@ export const createPool = async (
         .rpc();
 
     const poolAccountData = await program.account.pool.fetch(poolAccountKey);
-    const poolCreatedEvent = await poolCreatedListenerPromise;
-    await program.removeEventListener(listener);
+
 
     return {
         poolAccountKey,
         poolAccountData,
-        poolCreatedEvent,
     };
 };
 
