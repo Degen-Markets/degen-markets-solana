@@ -19,12 +19,6 @@ pub struct PoolCreated {
     pub description: String,
 }
 
-#[event]
-pub struct OptionCreated {
-    pub pool_account: Pubkey,
-    pub option: Pubkey
-}
-
 pub fn create_pool(
     ctx: Context<CreatePool>,
     title: String,

@@ -6,6 +6,7 @@ import { getOptionTitleHash } from "./utils/cryptography";
 import { expect} from "chai";
 import { createPool} from "./utils/pools";
 import {createOption, deriveOptionAccountKey} from "./utils/options";
+import {IdlEvents} from "@coral-xyz/anchor";
 
 dotenv.config();
 
@@ -15,14 +16,28 @@ describe("Option Creation", () => {
     anchor.setProvider(provider);
     const program = anchor.workspace.DegenPools as anchor.Program<DegenPools>;
 
-    it('should succeed if hash is correct & fails with custom error if incorrect', async () => {
+    it('should succeed if hash is correct and events are emitted & fails with custom error if incorrect',  async () => {
         const authorityKeypair = await getLocalAccount();
         const title = "Who will win the 2024 Euros?";
         const imageUrl = "https://example.com/image.png";
-        const description = "This is a pool to guess the winner of the US elections.";
+        const description = "This is a pool to guess the winner of the 2024 UEFA European Football Championship (Euro 2024).";
         const { poolAccountKey } = await createPool(title, authorityKeypair, imageUrl, description);
         const optionTitle = "England";
+
+        let listener: ReturnType<typeof program['addEventListener']>;
+
+        const optionCreatedListenerPromise
+            = new Promise<IdlEvents<typeof program.idl>['optionCreated']>(res => {
+            listener = program.addEventListener('optionCreated', (event) => {
+                res(event);
+            });
+        });
+
         const { optionAccountData } = await createOption(optionTitle, authorityKeypair, poolAccountKey);
+
+        const optionCreatedEvent = await optionCreatedListenerPromise;
+        await program.removeEventListener(listener);
+
         expect(optionAccountData.title).to.eql(optionTitle);
 
         const optionTwo = "Spain";
@@ -37,6 +52,10 @@ describe("Option Creation", () => {
                 })
                 .signers([authorityKeypair])
                 .rpc();
+
+            expect(optionCreatedEvent.poolAccount).to.eql(poolAccountKey);
+            expect(optionCreatedEvent.option).to.eql(optionTwoAccountKey);
+
         } catch (e) {
             expect(e.message).to.include("PoolOptionDoesNotMatchHash");
         }
@@ -48,7 +67,7 @@ describe("Option Creation", () => {
         const title = "What was the nature of the Trump assassination?";
         const optionTitle = "Lone Wolf";
         const imageUrl = "https://example.com/image.png";
-        const description = "This is a pool to guess the winner of the US elections.";
+        const description = "This is a pool to guess the winner of the 2024 UEFA European Football Championship (Euro 2024).";
         const { poolAccountKey } = await createPool(title, authorityKeypair, imageUrl, description)
         try {
             await createOption(optionTitle, randomKeypair, poolAccountKey);

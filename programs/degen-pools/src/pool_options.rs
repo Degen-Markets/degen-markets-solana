@@ -8,6 +8,12 @@ pub struct PoolOption {
     pub title: String,
     pub value: u64,
 }
+
+#[event]
+pub struct OptionCreated {
+    pub pool_account: Pubkey,
+    pub option: Pubkey
+}
 pub fn create_option(
     ctx: Context<CreateOption>,
     option_title: String,
@@ -25,6 +31,12 @@ pub fn create_option(
     let option_account = &mut ctx.accounts.option_account;
     option_account.title = option_title;
     option_account.value = 0;
+
+    emit!(OptionCreated {
+        pool_account: ctx.accounts.pool_account.key(),
+        option: ctx.accounts.option_account.key(),
+    });
+
     Ok(())
 }
 #[derive(Accounts)]

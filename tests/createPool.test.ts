@@ -16,7 +16,6 @@ describe("Pool Creation", () => {
         const imageUrl = "https://example.com/image.png";
         const description = "This is a pool to guess the winner of the US elections.";
 
-
         let listener: ReturnType<typeof program['addEventListener']>;
 
         const poolCreatedListenerPromise
@@ -47,7 +46,7 @@ describe("Pool Creation", () => {
         const authorityKeypair = await getLocalAccount();
         const title = "Which memecoin will have a bigger market cap?";
         const imageUrl = "https://example.com/image.png";
-        const description = "This is a pool to guess the winner of the US elections.";
+        const description = "This is a pool to guess which memecoin will have a bigger market cap.";
 
         await createPool(title, authorityKeypair, imageUrl, description);
 
@@ -62,7 +61,7 @@ describe("Pool Creation", () => {
         const randomWallet = await generateKeypair();
         const title = "Will $MOG go to $2 B market cap?";
         const imageUrl = "https://example.com/image.png";
-        const description = "This is a pool to guess the winner of the US elections.";
+        const description = "This is a pool to guess if $MOG will reach a $2 B market cap.";
 
         try {
             await createPool(title, randomWallet, imageUrl, description);
@@ -75,7 +74,7 @@ describe("Pool Creation", () => {
         const authorityKeypair = await getLocalAccount();
         const title = "Tate vs Ansem";
         const imageUrl = "https://example.com/image.png";
-        const description = "This is a pool to guess the winner of the US elections.";
+        const description = "This is a pool to guess the outcome of Tate vs Ansem.";
         const poolAccountKey = await derivePoolAccountKey(title);
 
         try {
