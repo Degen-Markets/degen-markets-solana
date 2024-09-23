@@ -14,4 +14,8 @@ pub enum CustomError {
     LosingOption,
     #[msg("This entry was not derived from the winning option or the signer")]
     EntryNotDerivedFromOptionOrSigner,
+    #[msg("The image URL is too long. Maximum length is 100 characters.")]
+    ImageUrlTooLong,
+    #[msg("The description is too long. Maximum length is 200 characters.")]
+    DescriptionTooLong,
 }
