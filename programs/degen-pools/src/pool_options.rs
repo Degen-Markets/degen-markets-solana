@@ -12,7 +12,8 @@ pub struct PoolOption {
 #[event]
 pub struct OptionCreated {
     pub pool_account: Pubkey,
-    pub option: Pubkey
+    pub option: Pubkey,
+    pub title: String,
 }
 pub fn create_option(
     ctx: Context<CreateOption>,
@@ -29,12 +30,13 @@ pub fn create_option(
         return err!(CustomError::PoolOptionDoesNotMatchHash);
     }
     let option_account = &mut ctx.accounts.option_account;
-    option_account.title = option_title;
+    option_account.title = option_title.clone();
     option_account.value = 0;
 
     emit!(OptionCreated {
         pool_account: ctx.accounts.pool_account.key(),
         option: ctx.accounts.option_account.key(),
+        title: option_title
     });
 
     Ok(())

@@ -55,6 +55,7 @@ describe("Option Creation", () => {
 
             expect(optionCreatedEvent.poolAccount).to.eql(poolAccountKey);
             expect(optionCreatedEvent.option).to.eql(optionTwoAccountKey);
+            expect(optionCreatedEvent.title).to.eql(optionTitle);
 
         } catch (e) {
             expect(e.message).to.include("PoolOptionDoesNotMatchHash");
