@@ -11,19 +11,43 @@ pub struct Pool {
     pub value: u64,
 }
 
+#[event]
+pub struct PoolCreated {
+    pub pool_account: Pubkey,
+    pub title: String,
+    pub image_url: String,
+    pub description: String,
+}
+
 pub fn create_pool(
     ctx: Context<CreatePool>,
     title: String,
     title_hash: [u8; 32],
+    image_url: String,
+    description: String,
 ) -> Result<()> {
+    if image_url.len() > 100 {
+        return err!(CustomError::ImageUrlTooLong);
+    }
+    if description.len() > 200 {
+        return err!(CustomError::DescriptionTooLong);
+    }
+
     if hash(&title.as_bytes()).to_bytes() != title_hash {
         return err!(CustomError::TitleDoesNotMatchHash);
     }
     let pool_account = &mut ctx.accounts.pool_account;
-    pool_account.title = title;
+    pool_account.title = title.clone();
     pool_account.is_paused = false;
     pool_account.winning_option = Pubkey::default();
     pool_account.value = 0;
+
+    emit!(PoolCreated {
+        pool_account: pool_account.key(),
+        title,
+        image_url,
+        description,
+    });
     Ok(())
 }
 

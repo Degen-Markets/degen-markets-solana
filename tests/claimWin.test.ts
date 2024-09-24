@@ -9,10 +9,12 @@ import {program} from "./utils/constants";
 describe('Wins claiming', () => {
    it('should not let a user claim twice', async () => {
        const title = "Will $PEPE market cap flip $DOGE at some point in 2025?";
+       const imageUrl = "https://example.com/image.png";
+       const description = "Will $PEPE market cap flip $DOGE at some point in 2025?";
        const optionTitle = "Yes";
        const adminWallet = await getLocalAccount();
        const user = await generateKeypair();
-       const { poolAccountKey } = await createPool(title, adminWallet);
+       const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
 
@@ -30,11 +32,14 @@ describe('Wins claiming', () => {
    });
    it("should not let a user claim using someone else's entry account", async () => {
        const title = "Which will be the biggest meme coin on Solana by the end of May 2025?";
+       const imageUrl = "https://example.com/image.png";
+       const description = "Which will be the biggest meme coin on Solana by the end of May 2025?";
        const optionTitle = "WIF";
        const adminWallet = await getLocalAccount();
        const user = await generateKeypair();
        const user1 = await generateKeypair();
-       const { poolAccountKey } = await createPool(title, adminWallet);
+
+       const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1));
 
@@ -53,13 +58,15 @@ describe('Wins claiming', () => {
 
    it('should not let a user claim if they did not win', async () => {
        const title = "Will we get a SOL ETF by the end of 2024?";
+       const imageUrl = "https://example.com/image.png";
+       const description = "Will we get a SOL ETF by the end of 2024?";
        const optionTitle = "No";
        const wrongOptionTitle = "Yes";
        const adminWallet = await getLocalAccount();
        const user = await generateKeypair();
        const user1 = await generateKeypair();
        const user2 = await generateKeypair();
-       const { poolAccountKey } = await createPool(title, adminWallet);
+       const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
        const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
        const { optionAccountKey: wrongOptionAccountKey } = await createOption(wrongOptionTitle, adminWallet, poolAccountKey);
        const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(1_000));
@@ -90,7 +97,10 @@ describe('Wins claiming', () => {
       const user = await generateKeypair();
       const user1 = await generateKeypair();
       const user2 = await generateKeypair();
-      const { poolAccountKey } = await createPool(title, adminWallet);
+       const imageUrl = "https://example.com/image.png";
+       const description = "Will ETH market cap over take Bitcoin's market cap?";
+
+      const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
       const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
       const { optionAccountKey: wrongOptionAccountKey } = await createOption(wrongOptionTitle, adminWallet, poolAccountKey);
       const { entryAccountKey } = await enterPool(poolAccountKey, optionAccountKey, user, new BN(3_000));

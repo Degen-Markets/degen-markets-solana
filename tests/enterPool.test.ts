@@ -12,12 +12,14 @@ describe('Pool Entry', () => {
         const adminWallet = await getLocalAccount();
         const userWallet = await generateKeypair();
         const title = "Will DOGE hit $1 in 2025?";
-        const { poolAccountKey } = await createPool(title, adminWallet);
+        const imageUrl = "https://example.com/image.png";
+        const description = "This is a pool to guess if DOGE will reach $1 by 2025.";
+        const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
         const optionTitle = "Yes";
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         const value = new BN(123);
         let listener: ReturnType<typeof program['addEventListener']>;
-        const poolEnteredListenerPromise 
+        const poolEnteredListenerPromise
           = new Promise<IdlEvents<typeof program.idl>['poolEntered']>(res => {
             listener = program.addEventListener('poolEntered', (event) => {
               res(event);
@@ -38,7 +40,9 @@ describe('Pool Entry', () => {
         const userWallet = await generateKeypair();
         const title = "Which of these cat memecoins reach $1 Billion first?";
         const optionTitle = "Popcat";
-        const { poolAccountKey } = await createPool(title, adminWallet);
+        const imageUrl = "https://example.com/image.png";
+        const description = "This is a pool to guess which cat memecoin will reach a $1 Billion market cap first.";
+        const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         await pausePool(true, poolAccountKey, adminWallet);
         try {
@@ -54,7 +58,9 @@ describe('Pool Entry', () => {
         const adminWallet = await getLocalAccount();
         const title = "Will $BONK market cap surpass $SHIB in 2025?";
         const optionTitle = "Yes, but only for a few weeks";
-        const { poolAccountKey } = await createPool(title, adminWallet);
+        const imageUrl = "https://example.com/image.png";
+        const description = "This is a pool to guess if $BONK's market cap will surpass $SHIB in 2025.";
+        const { poolAccountKey } = await createPool(title, adminWallet, imageUrl, description);
         const { optionAccountKey } = await createOption(optionTitle, adminWallet, poolAccountKey);
         try {
             await enterPool(poolAccountKey, optionAccountKey, userWallet, new BN(userBalance + 1));
