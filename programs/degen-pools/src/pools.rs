@@ -26,7 +26,7 @@ pub fn create_pool(
     image_url: String,
     description: String,
 ) -> Result<()> {
-    if image_url.len() > 100 {
+    if image_url.len() > 200 {
         return err!(CustomError::ImageUrlTooLong);
     }
     if description.len() > 200 {
