@@ -20,5 +20,12 @@ url = "https://api.apr.dev"
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
+[test]
+startup_wait = 60000
+
+[[test.genesis]]
+address = "2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ"
+program = "target/deploy/degen_pools.so"
+
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/*.test.ts --parallel"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/*.test.ts"
