@@ -19,9 +19,15 @@ pub struct PoolCreated {
     pub description: String,
 }
 
+#[event]
+pub struct WinnerSet {
+    pub pool: Pubkey,
+    pub option: Pubkey,
+}
+
 #[event] 
-pub struct PoolPaused {
-    pub isPaused: bool,
+pub struct PoolStatusUpdated {
+    pub is_paused: bool,
     pub pool: Pubkey 
 }
 
@@ -61,8 +67,8 @@ pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
     let pool_account = &mut ctx.accounts.pool_account;
     pool_account.is_paused = is_paused;
 
-    emit!(PoolPaused {
-        isPaused: is_paused,
+    emit!(PoolStatusUpdated {
+        is_paused: is_paused,
         pool: pool_account.key(),
     });
     Ok(())
@@ -74,6 +80,10 @@ pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> R
         return err!(CustomError::PoolStateIncompatible);
     }
     pool_account.winning_option = winning_option;
+    emit!(WinnerSet{
+        pool: pool_account.key(),
+        option: winning_option,
+    });
     Ok(())
 }
 
