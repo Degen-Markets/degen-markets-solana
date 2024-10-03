@@ -37,7 +37,7 @@ describe("Pool Paused", () => {
 
     await program.removeEventListener(listener);
 
-    expect(event.poolAccount.toString()).to.eq(poolAccountKey.toString());
+    expect(event.pool.toString()).to.eq(poolAccountKey.toString());
     expect(event.isPaused).to.eq(true);
 
     const unpausePoolListenerPromise = new Promise<
@@ -55,8 +55,6 @@ describe("Pool Paused", () => {
     await program.removeEventListener(listener);
 
     expect(unpausedEvent.isPaused).to.eq(false);
-    expect(unpausedEvent.poolAccount.toString()).to.eq(
-      poolAccountKey.toString()
-    );
+    expect(unpausedEvent.pool.toString()).to.eq(poolAccountKey.toString());
   });
 });
