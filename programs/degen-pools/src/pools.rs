@@ -19,6 +19,12 @@ pub struct PoolCreated {
     pub description: String,
 }
 
+#[event]
+pub struct WinnerSet {
+    pub pool: Pubkey,
+    pub option: Pubkey,
+}
+
 pub fn create_pool(
     ctx: Context<CreatePool>,
     title: String,
@@ -63,6 +69,10 @@ pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> R
         return err!(CustomError::PoolStateIncompatible);
     }
     pool_account.winning_option = winning_option;
+    emit!(WinnerSet{
+        pool: pool_account.key(),
+        option: winning_option,
+    });
     Ok(())
 }
 

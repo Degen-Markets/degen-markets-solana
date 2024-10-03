@@ -5,6 +5,7 @@ import {claimWin, enterPool} from "./utils/entries";
 import BN from "bn.js";
 import {expect} from "chai";
 import {program} from "./utils/constants";
+import { IdlEvents } from "@coral-xyz/anchor";
 
 describe('Wins claiming', () => {
    it('should not let a user claim twice', async () => {
@@ -108,7 +109,18 @@ describe('Wins claiming', () => {
       await enterPool(poolAccountKey, wrongOptionAccountKey, user2, new BN(10_000));
 
       await pausePool(true, poolAccountKey, adminWallet);
+
+      let listener: ReturnType<typeof program['addEventListener']>;
+      const winnerSetListenerPromise = new Promise<IdlEvents<typeof program.idl>['winnerSet']>(res => {
+          listener = program.addEventListener('winnerSet', (event) => {
+              res(event);
+          });
+      });
       await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
+      const winnerSetEvent = await winnerSetListenerPromise;
+      await program.removeEventListener(listener);
+      expect(winnerSetEvent.pool.equals(poolAccountKey)).to.be.true;
+      expect(winnerSetEvent.option.equals(optionAccountKey)).to.be.true;
 
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
       await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
