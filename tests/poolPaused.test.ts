@@ -7,11 +7,10 @@ import { IdlEvents } from "@coral-xyz/anchor";
 describe("Pool Paused", () => {
   let adminWallet;
   let poolAccountKey;
-
+  const randomChar = Math.random().toString(36).charAt(2);
   before(async () => {
     adminWallet = await getLocalAccount();
-
-    const title = "Will DOGE hit $1 in 2025?";
+    const title = `Will DOGE hit $1.5 in 2025 (${randomChar})?`;
     const imageUrl = "https://example.com/image.png";
     const description =
       "This is a pool to guess if DOGE will reach $1 by 2025.";
