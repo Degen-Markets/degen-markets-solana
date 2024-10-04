@@ -91,7 +91,7 @@ pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> R
 pub struct UpdatePool<'info> {
     #[account(mut)]
     pub pool_account: Account<'info, Pool>,
-    #[account(mut)]
+    #[account(mut, address = AUTHORITY_PUBKEY)]
     pub admin: Signer<'info>,
 }
 
@@ -108,8 +108,7 @@ pub struct CreatePool<'info> {
     pub pool_account: Account<'info, Pool>,
     #[account(
         mut,
-        signer,
-        address = AUTHORITY_PUBKEY
+        signer
     )]
     pub admin: Signer<'info>,
     pub system_program: Program<'info, System>,

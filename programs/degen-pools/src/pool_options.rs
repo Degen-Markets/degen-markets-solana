@@ -1,6 +1,6 @@
 use anchor_lang::Accounts;
 use anchor_lang::prelude::*;
-use crate::{Pool, errors::CustomError, constants::*};
+use crate::{Pool, errors::CustomError};
 use anchor_lang::solana_program::hash::hash;
 
 #[account]
@@ -56,8 +56,7 @@ pub struct CreateOption<'info> {
     pub pool_account: Account<'info, Pool>,
     #[account(
         mut,
-        signer,
-        address = AUTHORITY_PUBKEY
+        signer
     )]
     pub admin: Signer<'info>,
     pub system_program: Program<'info, System>,
