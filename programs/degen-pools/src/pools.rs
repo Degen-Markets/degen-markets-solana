@@ -25,6 +25,12 @@ pub struct WinnerSet {
     pub option: Pubkey,
 }
 
+#[event] 
+pub struct PoolStatusUpdated {
+    pub is_paused: bool,
+    pub pool: Pubkey 
+}
+
 pub fn create_pool(
     ctx: Context<CreatePool>,
     title: String,
@@ -60,6 +66,11 @@ pub fn create_pool(
 pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
     let pool_account = &mut ctx.accounts.pool_account;
     pool_account.is_paused = is_paused;
+
+    emit!(PoolStatusUpdated {
+        is_paused: is_paused,
+        pool: pool_account.key(),
+    });
     Ok(())
 }
 
