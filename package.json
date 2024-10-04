@@ -2,7 +2,11 @@
   "license": "ISC",
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{js,ts}": "prettier --write"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
@@ -15,8 +19,10 @@
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
     "chai": "^4.3.4",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "mocha": "^9.0.3",
-    "prettier": "^2.6.2",
+    "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",
     "typescript": "^4.3.5"
   }
