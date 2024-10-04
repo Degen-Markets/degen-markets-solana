@@ -25,10 +25,10 @@ pub struct WinnerSet {
     pub option: Pubkey,
 }
 
-#[event] 
+#[event]
 pub struct PoolStatusUpdated {
     pub is_paused: bool,
-    pub pool: Pubkey 
+    pub pool: Pubkey,
 }
 
 pub fn create_pool(

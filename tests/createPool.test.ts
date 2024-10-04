@@ -65,7 +65,7 @@ describe("Pool Creation", () => {
     }
   });
 
-  it.skip("should fail if a random wallet is used to create a pool", async () => {
+  it("should fail if a random wallet is used to create a pool", async () => {
     const randomWallet = await generateKeypair();
     const title = "Will $MOG go to $2 B market cap?";
     const imageUrl = "https://example.com/image.png";

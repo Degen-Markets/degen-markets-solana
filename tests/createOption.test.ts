@@ -78,7 +78,7 @@ describe("Option Creation", () => {
     }
   });
 
-  it.skip("does not allow a random wallet to create an option", async () => {
+  it("does not allow a random wallet to create an option", async () => {
     const randomKeypair = await generateKeypair();
     const authorityKeypair = await getLocalAccount();
     const title = "What was the nature of the Trump assassination?";
