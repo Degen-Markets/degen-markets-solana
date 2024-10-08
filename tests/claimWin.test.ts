@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { program } from "./utils/constants";
 import { IdlEvents } from "@coral-xyz/anchor";
 
-describe("Wins claiming", () => {
+describe("Wins claiming and WinClaimed Event", () => {
   it("should not let a user claim twice", async () => {
     const title = "Will $PEPE market cap flip $DOGE at some point in 2025?";
     const imageUrl = "https://example.com/image.png";
@@ -46,6 +46,7 @@ describe("Wins claiming", () => {
       expect(e.message).to.include("EntryAlreadyClaimed");
     }
   });
+
   it("should not let a user claim using someone else's entry account", async () => {
     const title =
       "Which will be the biggest meme coin on Solana by the end of May 2025?";
@@ -208,6 +209,15 @@ describe("Wins claiming", () => {
     await pausePool(true, poolAccountKey, adminWallet);
 
     let listener: ReturnType<(typeof program)["addEventListener"]>;
+
+    const winClaimedListenerPromise = new Promise<
+      IdlEvents<typeof program.idl>["winClaimed"]
+    >((resolve) => {
+      listener = program.addEventListener("winClaimed", (event) => {
+        resolve(event);
+      });
+    });
+
     const winnerSetListenerPromise = new Promise<
       IdlEvents<typeof program.idl>["winnerSet"]
     >((res) => {
@@ -215,6 +225,7 @@ describe("Wins claiming", () => {
         res(event);
       });
     });
+
     await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
     const winnerSetEvent = await winnerSetListenerPromise;
     await program.removeEventListener(listener);
@@ -222,6 +233,11 @@ describe("Wins claiming", () => {
     expect(winnerSetEvent.option.equals(optionAccountKey)).to.be.true;
 
     await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
+    const winClaimedEvent = await winClaimedListenerPromise;
+    expect(winClaimedEvent.entry.toString()).to.eq(entryAccountKey.toString());
+    expect(winClaimedEvent.winner.toString()).to.eq(user.publicKey.toString());
+    expect(winClaimedEvent.pool.toString()).to.eq(poolAccountKey.toString());
+
     await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
 
     // claiming a win closes the entry account for the user to refund the lamports
