@@ -17,7 +17,12 @@ pub struct PoolEntered {
     pub value: u64,
     pub entrant: Pubkey,
 }
-
+#[event] 
+pub struct WinClaimed {
+    pub entry: Pubkey,
+    pub winner: Pubkey,
+    pub pool: Pubkey,
+}
 pub fn enter_pool(ctx: Context<EnterPool>, value: u64) -> Result<()> {
     let pool_account = &mut ctx.accounts.pool_account;
     if pool_account.is_paused {
@@ -95,6 +100,13 @@ pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
         .winner
         .to_account_info()
         .try_borrow_mut_lamports()? += win_amount;
+    
+    emit!(WinClaimed {
+        entry: entry_account.key(),
+        winner: ctx.accounts.winner.key(),
+        pool: ctx.accounts.pool_account.key(),
+    });
+    
     Ok(())
 }
 

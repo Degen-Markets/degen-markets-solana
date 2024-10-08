@@ -7,7 +7,63 @@ import { expect } from "chai";
 import { program } from "./utils/constants";
 import { IdlEvents } from "@coral-xyz/anchor";
 
-describe("Wins claiming", () => {
+describe("Wins claiming and WinClaimed Event", () => {
+  it("should emit WinClaimed event when the user claims the win", async () => {
+    const title = "Will SOL price hit $500 by 2025?1";
+    const imageUrl = "https://example.com/image.png";
+    const description = "Bet on whether SOL price will hit $500 by 2025.";
+    const optionTitle = "Yes";
+    const adminWallet = await getLocalAccount();
+    const user = await generateKeypair();
+
+    try {
+      const { poolAccountKey } = await createPool(
+        title,
+        adminWallet,
+        imageUrl,
+        description,
+      );
+      const { optionAccountKey } = await createOption(
+        optionTitle,
+        adminWallet,
+        poolAccountKey,
+      );
+      const { entryAccountKey } = await enterPool(
+        poolAccountKey,
+        optionAccountKey,
+        user,
+        new BN(1_000),
+      );
+
+      await pausePool(true, poolAccountKey, adminWallet);
+      await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
+
+      let listener: ReturnType<(typeof program)["addEventListener"]>;
+      const winClaimedListenerPromise = new Promise<
+        IdlEvents<typeof program.idl>["winClaimed"]
+      >((resolve) => {
+        listener = program.addEventListener("winClaimed", (event) => {
+          resolve(event);
+        });
+      });
+
+      await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
+
+      const event = await winClaimedListenerPromise;
+      await program.removeEventListener(listener);
+
+      expect(event.entry.toString()).to.eq(entryAccountKey.toString());
+      expect(event.winner.toString()).to.eq(user.publicKey.toString());
+      expect(event.pool.toString()).to.eq(poolAccountKey.toString());
+    } catch (error) {
+      console.error(
+        "An error occurred during the WinClaimed event test:",
+        error,
+      );
+      throw error; // Re-throw the error so the test fails
+    }
+  });
+
   it("should not let a user claim twice", async () => {
     const title = "Will $PEPE market cap flip $DOGE at some point in 2025?";
     const imageUrl = "https://example.com/image.png";
@@ -46,6 +102,7 @@ describe("Wins claiming", () => {
       expect(e.message).to.include("EntryAlreadyClaimed");
     }
   });
+
   it("should not let a user claim using someone else's entry account", async () => {
     const title =
       "Which will be the biggest meme coin on Solana by the end of May 2025?";
