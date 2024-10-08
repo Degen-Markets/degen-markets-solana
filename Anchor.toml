@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-degen_pools = "2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ"
+degen_pools = "FkLPinEx3vxjjLv2PxNTb7BC4wU2ohi2yd28SwfhqNXh"
 
 [programs.devnet]
 degen_pools = "2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ"
@@ -24,7 +24,7 @@ wallet = "~/.config/solana/id.json"
 startup_wait = 60000
 
 [[test.genesis]]
-address = "2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ"
+address = "FkLPinEx3vxjjLv2PxNTb7BC4wU2ohi2yd28SwfhqNXh"
 program = "target/deploy/degen_pools.so"
 
 [scripts]
