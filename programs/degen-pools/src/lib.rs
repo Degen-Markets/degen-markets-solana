@@ -2,16 +2,16 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 use anchor_lang::solana_program::pubkey::Pubkey;
 
-pub use errors::CustomError;
-pub use pools::*;
 pub use entries::*;
+pub use errors::CustomError;
 pub use pool_options::*;
+pub use pools::*;
 
-mod errors;
-mod pools;
 mod constants;
 mod entries;
+mod errors;
 mod pool_options;
+mod pools;
 
 declare_id!("2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ");
 
@@ -25,7 +25,9 @@ pub mod degen_pools {
         title_hash: [u8; 32],
         image_url: String,
         description: String,
-    ) -> Result<()> { pools::create_pool(ctx, title, title_hash, image_url, description) }
+    ) -> Result<()> {
+        pools::create_pool(ctx, title, title_hash, image_url, description)
+    }
 
     pub fn set_is_paused(ctx: Context<UpdatePool>, is_paused: bool) -> Result<()> {
         pools::set_is_paused(ctx, is_paused)
@@ -43,10 +45,7 @@ pub mod degen_pools {
         pool_options::create_option(ctx, option_title, option_hash)
     }
 
-    pub fn enter_pool(
-        ctx: Context<EnterPool>,
-        value: u64,
-    ) -> Result<()> {
+    pub fn enter_pool(ctx: Context<EnterPool>, value: u64) -> Result<()> {
         entries::enter_pool(ctx, value)
     }
 

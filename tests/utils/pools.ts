@@ -5,7 +5,7 @@ import * as anchor from "@coral-xyz/anchor";
 export const derivePoolAccountKey = async (title: string) => {
   const [pda] = anchor.web3.PublicKey.findProgramAddressSync(
     [getBytesFromHashedStr(title)],
-    program.programId
+    program.programId,
   );
   return pda;
 };
@@ -14,7 +14,7 @@ export const createPool = async (
   title: string,
   keypair: anchor.web3.Keypair,
   imageUrl: string,
-  description: string
+  description: string,
 ) => {
   if (imageUrl.length > 100) {
     throw new Error("Image URL exceeds the maximum length of 100 characters");
@@ -47,7 +47,7 @@ export const createPool = async (
 export const pausePool = async (
   isPaused: boolean,
   poolAccountKey: anchor.web3.PublicKey,
-  adminWallet: anchor.web3.Keypair
+  adminWallet: anchor.web3.Keypair,
 ) =>
   program.methods
     .setIsPaused(isPaused)
@@ -61,7 +61,7 @@ export const pausePool = async (
 export const setWinningOption = async (
   poolAccountKey: anchor.web3.PublicKey,
   optionAccountKey: anchor.web3.PublicKey,
-  adminWallet: anchor.web3.Keypair
+  adminWallet: anchor.web3.Keypair,
 ) =>
   program.methods
     .setWinningOption(optionAccountKey)

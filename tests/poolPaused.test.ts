@@ -19,7 +19,7 @@ describe("Pool Paused", () => {
       title,
       adminWallet,
       imageUrl,
-      description
+      description,
     );
 
     poolAccountKey = createdPoolAccountKey;

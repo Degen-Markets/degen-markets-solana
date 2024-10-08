@@ -1,7 +1,7 @@
+use crate::constants::AUTHORITY_PUBKEY;
+use crate::errors::CustomError;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
-use crate::errors::CustomError;
-use crate::constants::AUTHORITY_PUBKEY;
 
 #[account]
 pub struct Pool {
@@ -25,10 +25,10 @@ pub struct WinnerSet {
     pub option: Pubkey,
 }
 
-#[event] 
+#[event]
 pub struct PoolStatusUpdated {
     pub is_paused: bool,
-    pub pool: Pubkey 
+    pub pool: Pubkey,
 }
 
 pub fn create_pool(
@@ -80,7 +80,7 @@ pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> R
         return err!(CustomError::PoolStateIncompatible);
     }
     pool_account.winning_option = winning_option;
-    emit!(WinnerSet{
+    emit!(WinnerSet {
         pool: pool_account.key(),
         option: winning_option,
     });
@@ -106,10 +106,7 @@ pub struct CreatePool<'info> {
         bump
     )]
     pub pool_account: Account<'info, Pool>,
-    #[account(
-        mut,
-        signer
-    )]
+    #[account(mut, signer)]
     pub admin: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

@@ -1,7 +1,7 @@
-use anchor_lang::{account, Accounts};
-use anchor_lang::prelude::*;
-use crate::{Pool, PoolOption};
 use crate::errors::*;
+use crate::{Pool, PoolOption};
+use anchor_lang::prelude::*;
+use anchor_lang::{account, Accounts};
 
 #[account]
 pub struct Entry {
@@ -18,10 +18,7 @@ pub struct PoolEntered {
     pub entrant: Pubkey,
 }
 
-pub fn enter_pool(
-    ctx: Context<EnterPool>,
-    value: u64,
-) -> Result<()> {
+pub fn enter_pool(ctx: Context<EnterPool>, value: u64) -> Result<()> {
     let pool_account = &mut ctx.accounts.pool_account;
     if pool_account.is_paused {
         return err!(CustomError::PoolStateIncompatible);
@@ -50,12 +47,12 @@ pub fn enter_pool(
     )?;
 
     emit!(PoolEntered {
-            pool: ctx.accounts.pool_account.key(),
-            option: ctx.accounts.option_account.key(),
-            entry: ctx.accounts.entry_account.key(),
-            entrant: ctx.accounts.entrant.key(),
-            value,
-        });
+        pool: ctx.accounts.pool_account.key(),
+        option: ctx.accounts.option_account.key(),
+        entry: ctx.accounts.entry_account.key(),
+        entrant: ctx.accounts.entrant.key(),
+        value,
+    });
     Ok(())
 }
 
@@ -73,20 +70,31 @@ pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
     }
 
     let (derived_entry_account_key, _entry_account_bump) = Pubkey::find_program_address(
-        &[&option_account.key().to_bytes(), &signer_account.key().to_bytes()],
-        ctx.program_id
+        &[
+            &option_account.key().to_bytes(),
+            &signer_account.key().to_bytes(),
+        ],
+        ctx.program_id,
     );
 
     if derived_entry_account_key != entry_account.key() {
-        return err!(CustomError::EntryNotDerivedFromOptionOrSigner)
+        return err!(CustomError::EntryNotDerivedFromOptionOrSigner);
     }
 
     entry_account.is_claimed = true;
-    let win_share_value = (pool_account.value * 100)/option_account.value;
-    let win_amount = (entry_account.value * win_share_value)/100;
+    let win_share_value = (pool_account.value * 100) / option_account.value;
+    let win_amount = (entry_account.value * win_share_value) / 100;
     // Transfer SOL from pool to winner
-    **ctx.accounts.pool_account.to_account_info().try_borrow_mut_lamports()? -= win_amount;
-    **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += win_amount;
+    **ctx
+        .accounts
+        .pool_account
+        .to_account_info()
+        .try_borrow_mut_lamports()? -= win_amount;
+    **ctx
+        .accounts
+        .winner
+        .to_account_info()
+        .try_borrow_mut_lamports()? += win_amount;
     Ok(())
 }
 
