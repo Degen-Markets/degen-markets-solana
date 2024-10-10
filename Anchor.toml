@@ -28,5 +28,5 @@ address = "2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ"
 program = "target/deploy/degen_pools.so"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/*.test.ts"
-parallel-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/*.test.ts --parallel"
+test = "yarn jest --runInBand"
+parallel-test = "yarn jest --maxWorkers=50%"
