@@ -2,9 +2,12 @@ import { program } from "./constants";
 import { getBytesFromHashedStr, getTitleHash } from "./cryptography";
 import * as anchor from "@coral-xyz/anchor";
 
-export const derivePoolAccountKey = async (title: string) => {
+export const derivePoolAccountKey = async (
+  title: string,
+  creator: anchor.web3.Keypair,
+) => {
   const [pda] = anchor.web3.PublicKey.findProgramAddressSync(
-    [getBytesFromHashedStr(title)],
+    [getBytesFromHashedStr(title), creator.publicKey.toBytes()],
     program.programId,
   );
   return pda;
@@ -24,11 +27,11 @@ export const createPool = async (
     throw new Error("Description exceeds the maximum length of 200 characters");
   }
 
-  const poolAccountKey = await derivePoolAccountKey(title);
+  const poolAccountKey = await derivePoolAccountKey(title, keypair);
 
   await program.methods
     .createPool(title, getTitleHash(title), imageUrl, description)
-    .accounts({
+    .accountsStrict({
       poolAccount: poolAccountKey,
       admin: keypair.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
@@ -51,7 +54,7 @@ export const pausePool = async (
 ) =>
   program.methods
     .setIsPaused(isPaused)
-    .accounts({
+    .accountsStrict({
       poolAccount: poolAccountKey,
       admin: adminWallet.publicKey,
     })
@@ -65,7 +68,7 @@ export const setWinningOption = async (
 ) =>
   program.methods
     .setWinningOption(optionAccountKey)
-    .accounts({
+    .accountsStrict({
       poolAccount: poolAccountKey,
       admin: adminWallet.publicKey,
     })

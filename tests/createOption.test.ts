@@ -98,4 +98,37 @@ describe("Option Creation", () => {
       expect(e.message).to.include("An address constraint was violated");
     }
   });
+
+  it("allows only the pool creator to create options", async () => {
+    const kp1 = await generateKeypair();
+    const kp2 = await generateKeypair();
+    const randomSuffix = Math.random().toString(36).substring(7);
+    const { poolAccountKey } = await createPool(
+      `pool1_${randomSuffix}`,
+      kp1,
+      "",
+      "",
+    );
+    const optionTitle = `option1_${randomSuffix}`;
+
+    // failure case
+    try {
+      await createOption(optionTitle, kp2, poolAccountKey);
+      throw new Error("This try block should have errored above");
+    } catch (e) {
+      expect(e.message).to.include("Pool account does not match derived key");
+    }
+
+    // success case
+    const { optionAccountKey } = await createOption(
+      optionTitle,
+      kp1,
+      poolAccountKey,
+    );
+    const expectedOptionAccountKey = await deriveOptionAccountKey(
+      optionTitle,
+      poolAccountKey,
+    );
+    expect(optionAccountKey.equals(expectedOptionAccountKey)).to.be.true;
+  });
 });
