@@ -1,65 +1,48 @@
-name: Solana Anchor CI
+name: Anchor Build and Test Workflow
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  setup:
-    name: Build and Test Anchor Program
+  run-anchor-container:
     runs-on: ubuntu-latest
-    steps:
-      - name: checkout repository
-        uses: actions/checkout@v3
+    container:
+      image: backpackapp/build:v0.30.1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Set Rust toolchain to stable (fixes the rustup issue)
+      - name: Set default Rust toolchain
+        run: |
+          rustup default stable
+          rustup show
 
       - name: Install dependencies
         run: |
-          npm i -g yarn
-          yarn --version
           yarn install
-      - name: Update and install tools
+
+      - name: Run Anchor Build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          pkg-config \
-          libudev-dev llvm libclang-dev \
-          protobuf-compiler libssl-dev
-      - name: Setup Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
-          rustc --version
-      - name: install Solana CLI
-        run: |
-          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          source ~/.bashrc
-          solana --version
-      - name: Install Anchor CLI
-        run: |
-          cargo install --git https://github.com/coral-xyz/anchor --tag v0.30.1 anchor-cli --force
-          anchor --version
-      - name: Build Anchor Program
-        run: |
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          ls -la 
+          pwd
           anchor build
-          ls -la
+      - name: Generating Solana keypair
+        run: |
+          solana-keygen new --no-bip39-passphrase --force
+          solana address
+        #   KeyPair location -> /github/home/.config/solana/id.json
+
       - name: Create degen_pools-keypair.json from secret
         env:
           PROGRAM_KEYPAIR_JSON: ${{ secrets.PROGRAM_KEYPAIR_JSON }}
-
         run: |
           echo "$PROGRAM_KEYPAIR_JSON" > target/deploy/degen_pools-keypair.json
-          pwd 
+          pwd
           ls -la
+          cat target/deploy/degen_pools-keypair.json
 
-    #   - name: Run Anchor Tests
-    #     run: |
-    #       export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-    #       anchor test
+      - name: Runing Test
+        run: anchor test
