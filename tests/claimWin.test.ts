@@ -3,7 +3,6 @@ import { pausePool, createPool, setWinningOption } from "./utils/pools";
 import { createOption } from "./utils/options";
 import { claimWin, enterPool } from "./utils/entries";
 import BN from "bn.js";
-import { expect } from "chai";
 import { program } from "./utils/constants";
 import { IdlEvents } from "@coral-xyz/anchor";
 
@@ -43,7 +42,7 @@ describe("Wins claiming and WinClaimed Event", () => {
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
     } catch (e) {
       // account deleted after a successful win claim
-      expect(e.message).to.include("EntryAlreadyClaimed");
+      expect(e.message).toContain("EntryAlreadyClaimed");
     }
   });
 
@@ -82,7 +81,7 @@ describe("Wins claiming and WinClaimed Event", () => {
     try {
       await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1);
     } catch (e) {
-      expect(e.message).to.include("EntryNotDerivedFromOptionOrSigner");
+      expect(e.message).toContain("EntryNotDerivedFromOptionOrSigner");
     }
 
     // ensure account is not deleted after failed claim win (no exception is thrown)
@@ -145,7 +144,7 @@ describe("Wins claiming and WinClaimed Event", () => {
         user,
       );
     } catch (e) {
-      expect(e.message).to.include("LosingOption");
+      expect(e.message).toContain("LosingOption");
     }
 
     try {
@@ -156,7 +155,7 @@ describe("Wins claiming and WinClaimed Event", () => {
         user,
       );
     } catch (e) {
-      expect(e.message).to.include("EntryNotDerivedFromOptionOrSigner");
+      expect(e.message).toContain("EntryNotDerivedFromOptionOrSigner");
     }
   });
 
@@ -229,14 +228,18 @@ describe("Wins claiming and WinClaimed Event", () => {
     await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
     const winnerSetEvent = await winnerSetListenerPromise;
     await program.removeEventListener(listener);
-    expect(winnerSetEvent.pool.equals(poolAccountKey)).to.be.true;
-    expect(winnerSetEvent.option.equals(optionAccountKey)).to.be.true;
+    expect(winnerSetEvent.pool.equals(poolAccountKey)).toBe(true);
+    expect(winnerSetEvent.option.equals(optionAccountKey)).toBe(true);
 
     await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
     const winClaimedEvent = await winClaimedListenerPromise;
-    expect(winClaimedEvent.entry.toString()).to.eq(entryAccountKey.toString());
-    expect(winClaimedEvent.winner.toString()).to.eq(user.publicKey.toString());
-    expect(winClaimedEvent.pool.toString()).to.eq(poolAccountKey.toString());
+    expect(winClaimedEvent.entry.toString()).toEqual(
+      entryAccountKey.toString(),
+    );
+    expect(winClaimedEvent.winner.toString()).toEqual(
+      user.publicKey.toString(),
+    );
+    expect(winClaimedEvent.pool.toString()).toEqual(poolAccountKey.toString());
 
     await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
 
@@ -244,7 +247,7 @@ describe("Wins claiming and WinClaimed Event", () => {
     try {
       await program.account.entry.fetch(entryAccountKey);
     } catch (e) {
-      expect(e.message).to.include(
+      expect(e.message).toContain(
         `Account does not exist or has no data ${entryAccountKey}`,
       );
     }
