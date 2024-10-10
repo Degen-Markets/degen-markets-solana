@@ -77,27 +77,6 @@ describe("Option Creation", () => {
     }
   });
 
-  it("does not allow a random wallet to create an option", async () => {
-    const randomKeypair = await generateKeypair();
-    const authorityKeypair = await getLocalAccount();
-    const title = "What was the nature of the Trump assassination?";
-    const optionTitle = "Lone Wolf";
-    const imageUrl = "https://example.com/image.png";
-    const description =
-      "This is a pool to guess the winner of the 2024 UEFA European Football Championship (Euro 2024).";
-    const { poolAccountKey } = await createPool(
-      title,
-      authorityKeypair,
-      imageUrl,
-      description,
-    );
-    try {
-      await createOption(optionTitle, randomKeypair, poolAccountKey);
-    } catch (e) {
-      expect(e.message).toContain("An address constraint was violated");
-    }
-  });
-
   it("allows only the pool creator to create options", async () => {
     const kp1 = await generateKeypair();
     const kp2 = await generateKeypair();
