@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { generateKeypair, getLocalAccount } from "./utils/keypairs";
 import * as dotenv from "dotenv";
-import { expect } from "chai";
 import { getTitleHash } from "./utils/cryptography";
 import { program } from "./utils/constants";
 import { createPool, derivePoolAccountKey } from "./utils/pools";
@@ -36,17 +35,17 @@ describe("Pool Creation", () => {
     const poolCreatedEvent = await poolCreatedListenerPromise;
     await program.removeEventListener(listener);
 
-    expect(poolAccountData.title).to.eql(title);
-    expect(poolAccountData.isPaused).to.eql(false);
-    expect(poolAccountData.winningOption).to.eql(
+    expect(poolAccountData.title).toEqual(title);
+    expect(poolAccountData.isPaused).toEqual(false);
+    expect(poolAccountData.winningOption).toEqual(
       anchor.web3.SystemProgram.programId,
     );
-    expect(Number(poolAccountData.value)).to.eql(0);
+    expect(Number(poolAccountData.value)).toEqual(0);
 
-    expect(poolCreatedEvent.poolAccount).to.eql(poolAccountKey);
-    expect(poolCreatedEvent.title).to.eql(title);
-    expect(poolCreatedEvent.imageUrl).to.eql(imageUrl);
-    expect(poolCreatedEvent.description).to.eql(description);
+    expect(poolCreatedEvent.poolAccount).toEqual(poolAccountKey);
+    expect(poolCreatedEvent.title).toEqual(title);
+    expect(poolCreatedEvent.imageUrl).toEqual(imageUrl);
+    expect(poolCreatedEvent.description).toEqual(description);
   });
 
   it("should fail if tried twice", async () => {
@@ -61,7 +60,7 @@ describe("Pool Creation", () => {
     try {
       await createPool(title, authorityKeypair, imageUrl, description);
     } catch (e) {
-      expect(e.message).to.include("custom program error: 0x0");
+      expect(e.message).toContain("custom program error: 0x0");
     }
   });
 
@@ -75,7 +74,7 @@ describe("Pool Creation", () => {
     try {
       await createPool(title, randomWallet, imageUrl, description);
     } catch (e) {
-      expect(e.message).to.include("An address constraint was violated");
+      expect(e.message).toContain("An address constraint was violated");
     }
   });
 
@@ -84,7 +83,7 @@ describe("Pool Creation", () => {
     const title = "Tate vs Ansem";
     const imageUrl = "https://example.com/image.png";
     const description = "This is a pool to guess the outcome of Tate vs Ansem.";
-    const poolAccountKey = await derivePoolAccountKey(title);
+    const poolAccountKey = await derivePoolAccountKey(title, authorityKeypair);
 
     try {
       await program.methods
@@ -97,7 +96,7 @@ describe("Pool Creation", () => {
         .signers([authorityKeypair])
         .rpc();
     } catch (e) {
-      expect(e.message).to.include("TitleDoesNotMatchHash");
+      expect(e.message).toContain("TitleDoesNotMatchHash");
     }
   });
 });
