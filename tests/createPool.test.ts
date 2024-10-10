@@ -83,7 +83,7 @@ describe("Pool Creation", () => {
     const title = "Tate vs Ansem";
     const imageUrl = "https://example.com/image.png";
     const description = "This is a pool to guess the outcome of Tate vs Ansem.";
-    const poolAccountKey = await derivePoolAccountKey(title);
+    const poolAccountKey = await derivePoolAccountKey(title, authorityKeypair);
 
     try {
       await program.methods
