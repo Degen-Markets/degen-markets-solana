@@ -102,7 +102,7 @@ pub struct CreatePool<'info> {
         init,
         payer = admin,
         space = 8 + 1 + 32 + (4 + title.len()) + 8, // 8 bytes for discriminator, 1 byte for bool has_concluded, 32 bytes for Pubkey winning_option, 4 bytes for string + title length bytes, 8 for value
-        seeds = [&title_hash],
+        seeds = [&title_hash, admin.key().as_ref()],
         bump
     )]
     pub pool_account: Account<'info, Pool>,

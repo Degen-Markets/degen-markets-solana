@@ -18,4 +18,6 @@ pub enum CustomError {
     ImageUrlTooLong,
     #[msg("The description is too long. Maximum length is 200 characters.")]
     DescriptionTooLong,
+    #[msg("Pool account does not match derived key")]
+    PoolAccountDoesNotMatch,
 }
