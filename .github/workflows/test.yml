@@ -2,7 +2,7 @@ name: Anchor Build and Test Workflow
 
 on:
   push:
-    branches: [main]
+    branches: [testing-action]
 
 jobs:
   run-anchor-container:
