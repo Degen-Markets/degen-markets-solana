@@ -1,5 +1,8 @@
 name: example-workflow
-on: [push]
+on:
+  push:
+    branches:
+      - testing-action
 jobs:
   run-anchor-build:
     runs-on: ubuntu-latest
@@ -31,9 +34,8 @@ jobs:
           solana-cli-version: "1.18.25"
           node-version: "20"
 
-      # Explicitly add Solana CLI to the PATH again
       - run: |
-          export PATH="/root/.local/share/solana/install/active_release/bin:$PATH"
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           source ~/.bashrc
           ls -la
           anchor build
