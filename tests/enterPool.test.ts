@@ -4,7 +4,6 @@ import { createOption } from "./utils/options";
 import { program, provider } from "./utils/constants";
 import BN from "bn.js";
 import { deriveEntryAccountKey, enterPool } from "./utils/entries";
-import { expect } from "chai";
 import { IdlEvents } from "@coral-xyz/anchor";
 
 describe("Pool Entry", () => {
@@ -45,10 +44,10 @@ describe("Pool Entry", () => {
     const event = await poolEnteredListenerPromise;
     await program.removeEventListener(listener);
 
-    expect(event.pool.toString()).to.eq(poolAccountKey.toString());
-    expect(event.entrant.toString()).to.eq(userWallet.publicKey.toString());
-    expect(entryAccountData.value.sub(value)).to.eql(new BN(0));
-    expect(entryAccountData.isClaimed).to.eql(false);
+    expect(event.pool.toString()).toEqual(poolAccountKey.toString());
+    expect(event.entrant.toString()).toEqual(userWallet.publicKey.toString());
+    expect(entryAccountData.value.sub(value)).toEqual(new BN(0));
+    expect(entryAccountData.isClaimed).toEqual(false);
   });
 
   it("should throw a custom error if user tries to enter a pool that is paused", async () => {
@@ -79,7 +78,7 @@ describe("Pool Entry", () => {
         new BN(100_000),
       );
     } catch (e) {
-      expect(e.message).to.include("PoolStateIncompatible");
+      expect(e.message).toContain("PoolStateIncompatible");
     }
   });
 
@@ -120,7 +119,7 @@ describe("Pool Entry", () => {
       try {
         await program.account.entry.fetch(entryAccountKey);
       } catch (e) {
-        expect(e.message).to.include("Account does not exist or has no data");
+        expect(e.message).toContain("Account does not exist or has no data");
       }
     }
   });

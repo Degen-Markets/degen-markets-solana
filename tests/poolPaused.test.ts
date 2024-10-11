@@ -1,6 +1,5 @@
 import { getLocalAccount } from "./utils/keypairs";
 import { pausePool, createPool } from "./utils/pools";
-import { expect } from "chai";
 import { program } from "./utils/constants";
 import { IdlEvents } from "@coral-xyz/anchor";
 
@@ -8,7 +7,7 @@ describe("Pool Paused", () => {
   let adminWallet;
   let poolAccountKey;
   const randomChar = Math.random().toString(36).charAt(2);
-  before(async () => {
+  beforeAll(async () => {
     adminWallet = await getLocalAccount();
     const title = `Will DOGE hit $1.5 in 2025 (${randomChar})?`;
     const imageUrl = "https://example.com/image.png";
@@ -41,8 +40,8 @@ describe("Pool Paused", () => {
     const event = await poolPausedListenerPromise;
     await program.removeEventListener(listener);
 
-    expect(event.pool.toString()).to.eq(poolAccountKey.toString());
-    expect(event.isPaused).to.eq(true);
+    expect(event.pool.toString()).toEqual(poolAccountKey.toString());
+    expect(event.isPaused).toEqual(true);
   });
 
   it("should emit a poolStatusUpdated event when the pool is unpaused", async () => {
@@ -61,7 +60,7 @@ describe("Pool Paused", () => {
     const unpausedEvent = await unpausePoolListenerPromise;
     await program.removeEventListener(listener);
 
-    expect(unpausedEvent.pool.toString()).to.eq(poolAccountKey.toString());
-    expect(unpausedEvent.isPaused).to.eq(false);
+    expect(unpausedEvent.pool.toString()).toEqual(poolAccountKey.toString());
+    expect(unpausedEvent.isPaused).toEqual(false);
   });
 });
