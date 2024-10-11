@@ -20,6 +20,16 @@ pub fn create_option(
     option_title: String,
     option_hash: [u8; 32],
 ) -> Result<()> {
+    // check that pool account is held by admin/signer
+    let title_hash = hash(ctx.accounts.pool_account.title.as_bytes().as_ref()).to_bytes();
+    let (derived_pool_account_key, _) = Pubkey::find_program_address(
+        &[&title_hash, ctx.accounts.admin.key().to_bytes().as_ref()],
+        ctx.program_id,
+    );
+    if derived_pool_account_key != ctx.accounts.pool_account.key() {
+        return err!(CustomError::PoolAccountDoesNotMatch);
+    }
+
     let mut derived_option_input = ctx.accounts.pool_account.key().to_string().to_owned();
     // Concatenate bytes using the concat method
     derived_option_input.push_str(&option_title);
