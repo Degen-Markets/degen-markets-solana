@@ -4,9 +4,15 @@ import { createOption } from "./utils/options";
 import { claimWin, enterPool } from "./utils/entries";
 import BN from "bn.js";
 import { program } from "./utils/constants";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { EventListenerService } from "./utils/events";
 
 describe("Wins claiming and WinClaimed Event", () => {
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should not let a user claim twice", async () => {
     const title = "Will $PEPE market cap flip $DOGE at some point in 2025?";
     const imageUrl = "https://example.com/image.png";
@@ -199,32 +205,15 @@ describe("Wins claiming and WinClaimed Event", () => {
 
     await pausePool(true, poolAccountKey, adminWallet);
 
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-
-    const winClaimedListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["winClaimed"]
-    >((resolve) => {
-      listener = program.addEventListener("winClaimed", (event) => {
-        resolve(event);
-      });
-    });
-
-    const winnerSetListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["winnerSet"]
-    >((res) => {
-      listener = program.addEventListener("winnerSet", (event) => {
-        res(event);
-      });
-    });
-
+    const winnerSetListener = listenerService.listen("winnerSet");
     await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
-    const winnerSetEvent = await winnerSetListenerPromise;
-    await program.removeEventListener(listener);
+    const winnerSetEvent = await winnerSetListener;
     expect(winnerSetEvent.pool.equals(poolAccountKey)).toBe(true);
     expect(winnerSetEvent.option.equals(optionAccountKey)).toBe(true);
 
+    const winClaimedListener = listenerService.listen("winClaimed");
     await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
-    const winClaimedEvent = await winClaimedListenerPromise;
+    const winClaimedEvent = await winClaimedListener;
     expect(winClaimedEvent.entry.toString()).toEqual(
       entryAccountKey.toString(),
     );
@@ -232,8 +221,6 @@ describe("Wins claiming and WinClaimed Event", () => {
       user.publicKey.toString(),
     );
     expect(winClaimedEvent.pool.toString()).toEqual(poolAccountKey.toString());
-
-    await claimWin(poolAccountKey, optionAccountKey, entry1AccountKey, user1);
 
     // claiming a win closes the entry account for the user to refund the lamports
     await expect(async () => {

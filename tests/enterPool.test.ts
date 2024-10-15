@@ -1,12 +1,18 @@
 import { generateKeypair, getLocalAccount } from "./utils/keypairs";
 import { pausePool, createPool } from "./utils/pools";
 import { createOption } from "./utils/options";
-import { program, provider } from "./utils/constants";
+import { provider } from "./utils/constants";
 import BN from "bn.js";
-import { deriveEntryAccountKey, enterPool } from "./utils/entries";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { enterPool } from "./utils/entries";
+import { EventListenerService } from "./utils/events";
 
 describe("Pool Entry", () => {
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should let a user enter on an active pool", async () => {
     const adminWallet = await getLocalAccount();
     const userWallet = await generateKeypair();
@@ -27,23 +33,14 @@ describe("Pool Entry", () => {
       poolAccountKey,
     );
     const value = new BN(123);
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-    const poolEnteredListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["poolEntered"]
-    >((res) => {
-      listener = program.addEventListener("poolEntered", (event) => {
-        res(event);
-      });
-    });
+    const listener = listenerService.listen("poolEntered");
     const { entryAccountData } = await enterPool(
       poolAccountKey,
       optionAccountKey,
       userWallet,
       value,
     );
-    const event = await poolEnteredListenerPromise;
-    await program.removeEventListener(listener);
-
+    const event = await listener;
     expect(event.pool.toString()).toEqual(poolAccountKey.toString());
     expect(event.entrant.toString()).toEqual(userWallet.publicKey.toString());
     expect(entryAccountData.value.sub(value)).toEqual(new BN(0));

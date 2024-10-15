@@ -4,11 +4,17 @@ import * as dotenv from "dotenv";
 import { getTitleHash } from "./utils/cryptography";
 import { program } from "./utils/constants";
 import { createPool, derivePoolAccountKey } from "./utils/pools";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { EventListenerService } from "./utils/events";
 
 dotenv.config();
 
 describe("Pool Creation", () => {
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should succeed if wallet used is the authority account and events are emitted", async () => {
     const authorityKeypair = await getLocalAccount();
     const title = "Who will win the US Elections?";
@@ -16,24 +22,14 @@ describe("Pool Creation", () => {
     const description =
       "This is a pool to guess the winner of the US elections.";
 
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-
-    const poolCreatedListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["poolCreated"]
-    >((res) => {
-      listener = program.addEventListener("poolCreated", (event) => {
-        res(event);
-      });
-    });
-
+    const listener = listenerService.listen("poolCreated");
     const { poolAccountData, poolAccountKey } = await createPool(
       title,
       authorityKeypair,
       imageUrl,
       description,
     );
-    const poolCreatedEvent = await poolCreatedListenerPromise;
-    await program.removeEventListener(listener);
+    const poolCreatedEvent = await listener;
 
     expect(poolAccountData.title).toEqual(title);
     expect(poolAccountData.isPaused).toEqual(false);
