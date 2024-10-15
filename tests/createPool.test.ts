@@ -57,11 +57,9 @@ describe("Pool Creation", () => {
 
     await createPool(title, authorityKeypair, imageUrl, description);
 
-    try {
+    await expect(async () => {
       await createPool(title, authorityKeypair, imageUrl, description);
-    } catch (e) {
-      expect(e.message).toContain("custom program error: 0x0");
-    }
+    }).rejects.toThrow(/account Address .*? already in use/);
   });
 
   it("should fail if a random wallet is used to create a pool", async () => {
@@ -71,11 +69,9 @@ describe("Pool Creation", () => {
     const description =
       "This is a pool to guess if $MOG will reach a $2 B market cap.";
 
-    try {
+    await expect(async () => {
       await createPool(title, randomWallet, imageUrl, description);
-    } catch (e) {
-      expect(e.message).toContain("An address constraint was violated");
-    }
+    }).rejects.toThrow("An address constraint was violated");
   });
 
   it("should fail if title does not match the title hash", async () => {
@@ -85,7 +81,7 @@ describe("Pool Creation", () => {
     const description = "This is a pool to guess the outcome of Tate vs Ansem.";
     const poolAccountKey = await derivePoolAccountKey(title, authorityKeypair);
 
-    try {
+    await expect(async () => {
       await program.methods
         .createPool(title, getTitleHash("randomString"), imageUrl, description)
         .accounts([
@@ -95,8 +91,6 @@ describe("Pool Creation", () => {
         ])
         .signers([authorityKeypair])
         .rpc();
-    } catch (e) {
-      expect(e.message).toContain("TitleDoesNotMatchHash");
-    }
+    }).rejects.toThrow("TitleDoesNotMatchHash");
   });
 });

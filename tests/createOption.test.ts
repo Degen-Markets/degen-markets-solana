@@ -20,7 +20,7 @@ describe("Option Creation", () => {
     const imageUrl = "https://example.com/image.png";
     const description =
       "This is a pool to guess the winner of the 2024 UEFA European Football Championship (Euro 2024).";
-    const { poolAccountKey } = await createPool(
+    const { poolAccountKey, poolAccountData } = await createPool(
       title,
       authorityKeypair,
       imageUrl,
@@ -38,7 +38,7 @@ describe("Option Creation", () => {
       });
     });
 
-    const { optionAccountData } = await createOption(
+    const { optionAccountData, optionAccountKey } = await createOption(
       optionTitle,
       authorityKeypair,
       poolAccountKey,
@@ -46,6 +46,9 @@ describe("Option Creation", () => {
 
     const optionCreatedEvent = await optionCreatedListenerPromise;
     await program.removeEventListener(listener);
+    expect(optionCreatedEvent.poolAccount).toEqual(poolAccountKey);
+    expect(optionCreatedEvent.title).toEqual(optionTitle);
+    expect(optionCreatedEvent.option).toEqual(optionAccountKey);
 
     expect(optionAccountData.title).toEqual(optionTitle);
 
@@ -54,7 +57,8 @@ describe("Option Creation", () => {
       optionTwo,
       poolAccountKey,
     );
-    try {
+
+    await expect(async () => {
       await program.methods
         .createOption(
           "randomText",
@@ -68,13 +72,7 @@ describe("Option Creation", () => {
         })
         .signers([authorityKeypair])
         .rpc();
-
-      expect(optionCreatedEvent.poolAccount).toEqual(poolAccountKey);
-      expect(optionCreatedEvent.option).toEqual(optionTwoAccountKey);
-      expect(optionCreatedEvent.title).toEqual(optionTitle);
-    } catch (e) {
-      expect(e.message).toContain("PoolOptionDoesNotMatchHash");
-    }
+    }).rejects.toThrow("PoolOptionDoesNotMatchHash");
   });
 
   it("allows only the pool creator to create options", async () => {
@@ -90,12 +88,9 @@ describe("Option Creation", () => {
     const optionTitle = `option1_${randomSuffix}`;
 
     // failure case
-    try {
+    await expect(async () => {
       await createOption(optionTitle, kp2, poolAccountKey);
-      throw new Error("This try block should have errored above");
-    } catch (e) {
-      expect(e.message).toContain("Pool account does not match derived key");
-    }
+    }).rejects.toThrow("PoolAccountDoesNotMatch");
 
     // success case
     const { optionAccountKey } = await createOption(
