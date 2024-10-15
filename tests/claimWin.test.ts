@@ -45,9 +45,9 @@ describe("Wins claiming and WinClaimed Event", () => {
     await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
 
     // account deleted after a successful win claim
-    await expect(async () => {
-      await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user);
-    }).rejects.toThrow("EntryAlreadyClaimed");
+    await expect(
+      claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user),
+    ).rejects.toThrow("EntryAlreadyClaimed");
   });
 
   it("should not let a user claim using someone else's entry account", async () => {
@@ -82,9 +82,9 @@ describe("Wins claiming and WinClaimed Event", () => {
     await pausePool(true, poolAccountKey, adminWallet);
     await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
-    await expect(async () => {
-      await claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1);
-    }).rejects.toThrow("EntryNotDerivedFromOptionOrSigner");
+    await expect(
+      claimWin(poolAccountKey, optionAccountKey, entryAccountKey, user1),
+    ).rejects.toThrow("EntryNotDerivedFromOptionOrSigner");
 
     // ensure account is not deleted after failed claim win (no exception is thrown)
     await program.account.entry.fetch(entryAccountKey);
@@ -138,23 +138,13 @@ describe("Wins claiming and WinClaimed Event", () => {
     await pausePool(true, poolAccountKey, adminWallet);
     await setWinningOption(poolAccountKey, optionAccountKey, adminWallet);
 
-    await expect(async () => {
-      await claimWin(
-        poolAccountKey,
-        wrongOptionAccountKey,
-        entryAccountKey,
-        user,
-      );
-    }).rejects.toThrow("LosingOption");
+    await expect(
+      claimWin(poolAccountKey, wrongOptionAccountKey, entryAccountKey, user),
+    ).rejects.toThrow("LosingOption");
 
-    await expect(async () => {
-      await claimWin(
-        poolAccountKey,
-        optionAccountKey,
-        wrongOptionEntryKey,
-        user,
-      );
-    }).rejects.toThrow("EntryNotDerivedFromOptionOrSigner");
+    await expect(
+      claimWin(poolAccountKey, optionAccountKey, wrongOptionEntryKey, user),
+    ).rejects.toThrow("EntryNotDerivedFromOptionOrSigner");
   });
 
   it("should claim the user's share of the win", async () => {
@@ -223,9 +213,7 @@ describe("Wins claiming and WinClaimed Event", () => {
     expect(winClaimedEvent.pool.toString()).toEqual(poolAccountKey.toString());
 
     // claiming a win closes the entry account for the user to refund the lamports
-    await expect(async () => {
-      await program.account.entry.fetch(entryAccountKey);
-    }).rejects.toThrow(
+    await expect(program.account.entry.fetch(entryAccountKey)).rejects.toThrow(
       `Account does not exist or has no data ${entryAccountKey}`,
     );
   });

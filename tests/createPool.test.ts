@@ -53,9 +53,9 @@ describe("Pool Creation", () => {
 
     await createPool(title, authorityKeypair, imageUrl, description);
 
-    await expect(async () => {
-      await createPool(title, authorityKeypair, imageUrl, description);
-    }).rejects.toThrow(/account Address .*? already in use/);
+    await expect(
+      createPool(title, authorityKeypair, imageUrl, description),
+    ).rejects.toThrow(/account Address .*? already in use/);
   });
 
   it("should fail if a random wallet is used to create a pool", async () => {
@@ -77,8 +77,8 @@ describe("Pool Creation", () => {
     const description = "This is a pool to guess the outcome of Tate vs Ansem.";
     const poolAccountKey = await derivePoolAccountKey(title, authorityKeypair);
 
-    await expect(async () => {
-      await program.methods
+    await expect(
+      program.methods
         .createPool(title, getTitleHash("randomString"), imageUrl, description)
         .accounts([
           poolAccountKey,
@@ -86,7 +86,7 @@ describe("Pool Creation", () => {
           anchor.web3.SystemProgram.programId,
         ])
         .signers([authorityKeypair])
-        .rpc();
-    }).rejects.toThrow("TitleDoesNotMatchHash");
+        .rpc(),
+    ).rejects.toThrow("TitleDoesNotMatchHash");
   });
 });

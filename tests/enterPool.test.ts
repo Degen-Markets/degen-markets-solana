@@ -67,14 +67,9 @@ describe("Pool Entry", () => {
       poolAccountKey,
     );
     await pausePool(true, poolAccountKey, adminWallet);
-    await expect(async () => {
-      await enterPool(
-        poolAccountKey,
-        optionAccountKey,
-        userWallet,
-        new BN(100_000),
-      );
-    }).rejects.toThrow("PoolStateIncompatible");
+    await expect(
+      enterPool(poolAccountKey, optionAccountKey, userWallet, new BN(100_000)),
+    ).rejects.toThrow("PoolStateIncompatible");
   });
 
   it("should not create an Entry if a user does not have enough balance", async () => {
@@ -99,13 +94,13 @@ describe("Pool Entry", () => {
       adminWallet,
       poolAccountKey,
     );
-    await expect(async () => {
-      await enterPool(
+    await expect(
+      enterPool(
         poolAccountKey,
         optionAccountKey,
         userWallet,
         new BN(userBalance + 1),
-      );
-    }).rejects.toThrow("Transfer: insufficient lamports");
+      ),
+    ).rejects.toThrow("Transfer: insufficient lamports");
   });
 });

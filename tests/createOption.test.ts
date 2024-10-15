@@ -53,8 +53,8 @@ describe("Option Creation", () => {
       poolAccountKey,
     );
 
-    await expect(async () => {
-      await program.methods
+    await expect(
+      program.methods
         .createOption(
           "randomText",
           getOptionTitleHash(poolAccountKey, optionTwo) as unknown as number[],
@@ -66,8 +66,8 @@ describe("Option Creation", () => {
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([authorityKeypair])
-        .rpc();
-    }).rejects.toThrow("PoolOptionDoesNotMatchHash");
+        .rpc(),
+    ).rejects.toThrow("PoolOptionDoesNotMatchHash");
   });
 
   it("allows only the pool creator to create options", async () => {
@@ -83,9 +83,9 @@ describe("Option Creation", () => {
     const optionTitle = `option1_${randomSuffix}`;
 
     // failure case
-    await expect(async () => {
-      await createOption(optionTitle, kp2, poolAccountKey);
-    }).rejects.toThrow("PoolAccountDoesNotMatch");
+    await expect(
+      createOption(optionTitle, kp2, poolAccountKey),
+    ).rejects.toThrow("PoolAccountDoesNotMatch");
 
     // success case
     const { optionAccountKey } = await createOption(
