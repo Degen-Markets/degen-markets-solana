@@ -4,11 +4,17 @@ import * as dotenv from "dotenv";
 import { getTitleHash } from "./utils/cryptography";
 import { program } from "./utils/constants";
 import { createPool, derivePoolAccountKey } from "./utils/pools";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { EventListenerService } from "./utils/events";
 
 dotenv.config();
 
 describe("Pool Creation", () => {
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should succeed if wallet used is the authority account and events are emitted", async () => {
     const authorityKeypair = await getLocalAccount();
     const title = "Who will win the US Elections?";
@@ -16,24 +22,14 @@ describe("Pool Creation", () => {
     const description =
       "This is a pool to guess the winner of the US elections.";
 
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-
-    const poolCreatedListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["poolCreated"]
-    >((res) => {
-      listener = program.addEventListener("poolCreated", (event) => {
-        res(event);
-      });
-    });
-
+    const listener = listenerService.listen("poolCreated");
     const { poolAccountData, poolAccountKey } = await createPool(
       title,
       authorityKeypair,
       imageUrl,
       description,
     );
-    const poolCreatedEvent = await poolCreatedListenerPromise;
-    await program.removeEventListener(listener);
+    const poolCreatedEvent = await listener;
 
     expect(poolAccountData.title).toEqual(title);
     expect(poolAccountData.isPaused).toEqual(false);
@@ -57,11 +53,9 @@ describe("Pool Creation", () => {
 
     await createPool(title, authorityKeypair, imageUrl, description);
 
-    try {
-      await createPool(title, authorityKeypair, imageUrl, description);
-    } catch (e) {
-      expect(e.message).toContain("custom program error: 0x0");
-    }
+    await expect(
+      createPool(title, authorityKeypair, imageUrl, description),
+    ).rejects.toThrow(/account Address .*? already in use/);
   });
 
   it("should fail if a random wallet is used to create a pool", async () => {
@@ -71,11 +65,9 @@ describe("Pool Creation", () => {
     const description =
       "This is a pool to guess if $MOG will reach a $2 B market cap.";
 
-    try {
+    await expect(async () => {
       await createPool(title, randomWallet, imageUrl, description);
-    } catch (e) {
-      expect(e.message).toContain("An address constraint was violated");
-    }
+    }).rejects.toThrow("An address constraint was violated");
   });
 
   it("should fail if title does not match the title hash", async () => {
@@ -85,8 +77,8 @@ describe("Pool Creation", () => {
     const description = "This is a pool to guess the outcome of Tate vs Ansem.";
     const poolAccountKey = await derivePoolAccountKey(title, authorityKeypair);
 
-    try {
-      await program.methods
+    await expect(
+      program.methods
         .createPool(title, getTitleHash("randomString"), imageUrl, description)
         .accounts([
           poolAccountKey,
@@ -94,9 +86,7 @@ describe("Pool Creation", () => {
           anchor.web3.SystemProgram.programId,
         ])
         .signers([authorityKeypair])
-        .rpc();
-    } catch (e) {
-      expect(e.message).toContain("TitleDoesNotMatchHash");
-    }
+        .rpc(),
+    ).rejects.toThrow("TitleDoesNotMatchHash");
   });
 });

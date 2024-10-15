@@ -1,12 +1,18 @@
 import { generateKeypair, getLocalAccount } from "./utils/keypairs";
 import { pausePool, createPool } from "./utils/pools";
 import { createOption } from "./utils/options";
-import { program, provider } from "./utils/constants";
+import { provider } from "./utils/constants";
 import BN from "bn.js";
-import { deriveEntryAccountKey, enterPool } from "./utils/entries";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { enterPool } from "./utils/entries";
+import { EventListenerService } from "./utils/events";
 
 describe("Pool Entry", () => {
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should let a user enter on an active pool", async () => {
     const adminWallet = await getLocalAccount();
     const userWallet = await generateKeypair();
@@ -27,23 +33,14 @@ describe("Pool Entry", () => {
       poolAccountKey,
     );
     const value = new BN(123);
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-    const poolEnteredListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["poolEntered"]
-    >((res) => {
-      listener = program.addEventListener("poolEntered", (event) => {
-        res(event);
-      });
-    });
+    const listener = listenerService.listen("poolEntered");
     const { entryAccountData } = await enterPool(
       poolAccountKey,
       optionAccountKey,
       userWallet,
       value,
     );
-    const event = await poolEnteredListenerPromise;
-    await program.removeEventListener(listener);
-
+    const event = await listener;
     expect(event.pool.toString()).toEqual(poolAccountKey.toString());
     expect(event.entrant.toString()).toEqual(userWallet.publicKey.toString());
     expect(entryAccountData.value.sub(value)).toEqual(new BN(0));
@@ -70,16 +67,9 @@ describe("Pool Entry", () => {
       poolAccountKey,
     );
     await pausePool(true, poolAccountKey, adminWallet);
-    try {
-      await enterPool(
-        poolAccountKey,
-        optionAccountKey,
-        userWallet,
-        new BN(100_000),
-      );
-    } catch (e) {
-      expect(e.message).toContain("PoolStateIncompatible");
-    }
+    await expect(
+      enterPool(poolAccountKey, optionAccountKey, userWallet, new BN(100_000)),
+    ).rejects.toThrow("PoolStateIncompatible");
   });
 
   it("should not create an Entry if a user does not have enough balance", async () => {
@@ -104,23 +94,13 @@ describe("Pool Entry", () => {
       adminWallet,
       poolAccountKey,
     );
-    try {
-      await enterPool(
+    await expect(
+      enterPool(
         poolAccountKey,
         optionAccountKey,
         userWallet,
         new BN(userBalance + 1),
-      );
-    } catch (e) {
-      const entryAccountKey = await deriveEntryAccountKey(
-        optionAccountKey,
-        userWallet,
-      );
-      try {
-        await program.account.entry.fetch(entryAccountKey);
-      } catch (e) {
-        expect(e.message).toContain("Account does not exist or has no data");
-      }
-    }
+      ),
+    ).rejects.toThrow("Transfer: insufficient lamports");
   });
 });

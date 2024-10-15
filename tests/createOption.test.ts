@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 import { getOptionTitleHash } from "./utils/cryptography";
 import { createPool } from "./utils/pools";
 import { createOption, deriveOptionAccountKey } from "./utils/options";
-import { IdlEvents } from "@coral-xyz/anchor";
+import { EventListenerService } from "./utils/events";
 
 dotenv.config();
 
@@ -14,13 +14,19 @@ describe("Option Creation", () => {
   anchor.setProvider(provider);
   const program = anchor.workspace.DegenPools as anchor.Program<DegenPools>;
 
+  const listenerService = new EventListenerService();
+
+  afterAll(async () => {
+    await listenerService.reset();
+  });
+
   it("should succeed if hash is correct and events are emitted & fails with custom error if incorrect", async () => {
     const authorityKeypair = await getLocalAccount();
     const title = "Who will win the 2024 Euros?";
     const imageUrl = "https://example.com/image.png";
     const description =
       "This is a pool to guess the winner of the 2024 UEFA European Football Championship (Euro 2024).";
-    const { poolAccountKey } = await createPool(
+    const { poolAccountKey, poolAccountData } = await createPool(
       title,
       authorityKeypair,
       imageUrl,
@@ -28,24 +34,16 @@ describe("Option Creation", () => {
     );
     const optionTitle = "England";
 
-    let listener: ReturnType<(typeof program)["addEventListener"]>;
-
-    const optionCreatedListenerPromise = new Promise<
-      IdlEvents<typeof program.idl>["optionCreated"]
-    >((res) => {
-      listener = program.addEventListener("optionCreated", (event) => {
-        res(event);
-      });
-    });
-
-    const { optionAccountData } = await createOption(
+    const listener = listenerService.listen("optionCreated");
+    const { optionAccountData, optionAccountKey } = await createOption(
       optionTitle,
       authorityKeypair,
       poolAccountKey,
     );
-
-    const optionCreatedEvent = await optionCreatedListenerPromise;
-    await program.removeEventListener(listener);
+    const optionCreatedEvent = await listener;
+    expect(optionCreatedEvent.poolAccount).toEqual(poolAccountKey);
+    expect(optionCreatedEvent.title).toEqual(optionTitle);
+    expect(optionCreatedEvent.option).toEqual(optionAccountKey);
 
     expect(optionAccountData.title).toEqual(optionTitle);
 
@@ -54,8 +52,9 @@ describe("Option Creation", () => {
       optionTwo,
       poolAccountKey,
     );
-    try {
-      await program.methods
+
+    await expect(
+      program.methods
         .createOption(
           "randomText",
           getOptionTitleHash(poolAccountKey, optionTwo) as unknown as number[],
@@ -67,14 +66,8 @@ describe("Option Creation", () => {
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([authorityKeypair])
-        .rpc();
-
-      expect(optionCreatedEvent.poolAccount).toEqual(poolAccountKey);
-      expect(optionCreatedEvent.option).toEqual(optionTwoAccountKey);
-      expect(optionCreatedEvent.title).toEqual(optionTitle);
-    } catch (e) {
-      expect(e.message).toContain("PoolOptionDoesNotMatchHash");
-    }
+        .rpc(),
+    ).rejects.toThrow("PoolOptionDoesNotMatchHash");
   });
 
   it("allows only the pool creator to create options", async () => {
@@ -90,12 +83,9 @@ describe("Option Creation", () => {
     const optionTitle = `option1_${randomSuffix}`;
 
     // failure case
-    try {
-      await createOption(optionTitle, kp2, poolAccountKey);
-      throw new Error("This try block should have errored above");
-    } catch (e) {
-      expect(e.message).toContain("Pool account does not match derived key");
-    }
+    await expect(
+      createOption(optionTitle, kp2, poolAccountKey),
+    ).rejects.toThrow("PoolAccountDoesNotMatch");
 
     // success case
     const { optionAccountKey } = await createOption(
