@@ -1,3 +1,4 @@
+import { BN } from "@coral-xyz/anchor";
 import { program } from "./constants";
 import { getBytesFromHashedStr, getTitleHash } from "./cryptography";
 import * as anchor from "@coral-xyz/anchor";
@@ -73,4 +74,15 @@ export const setWinningOption = async (
       admin: adminWallet.publicKey,
     })
     .signers([adminWallet])
+    .rpc();
+
+export const fundPool = async (
+  value: BN,
+  poolAccountKey: anchor.web3.PublicKey,
+  remainingAccounts: anchor.web3.AccountMeta[],
+) =>
+  program.methods
+    .fundPool(value)
+    .accounts({ poolAccount: poolAccountKey })
+    .remainingAccounts(remainingAccounts)
     .rpc();

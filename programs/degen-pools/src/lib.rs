@@ -13,7 +13,7 @@ mod errors;
 mod pool_options;
 mod pools;
 
-declare_id!("2JWqYTXG5yHSU78hjKb39YFx82whbK74v6sMqMG3TVBQ");
+declare_id!(constants::PROGRAM_ID);
 
 #[program]
 pub mod degen_pools {
@@ -51,5 +51,12 @@ pub mod degen_pools {
 
     pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
         entries::claim_win(ctx)
+    }
+
+    pub fn fund_pool<'c: 'info, 'info>(
+        ctx: Context<'_, '_, 'c, 'info, FundPool<'info>>,
+        value: u64,
+    ) -> Result<()> {
+        pools::fund_pool(ctx, value)
     }
 }

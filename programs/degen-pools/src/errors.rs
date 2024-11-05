@@ -20,4 +20,8 @@ pub enum CustomError {
     DescriptionTooLong,
     #[msg("Pool account does not match derived key")]
     PoolAccountDoesNotMatch,
+    #[msg("Remaining accounts must be pool options")]
+    InvalidPoolOptionAccount,
+    #[msg("No pool option accounts provided")]
+    NoPoolOptionAccounts,
 }

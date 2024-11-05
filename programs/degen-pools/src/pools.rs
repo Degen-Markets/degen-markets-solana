@@ -1,5 +1,6 @@
-use crate::constants::AUTHORITY_PUBKEY;
+use crate::constants::{AUTHORITY_PUBKEY, PROGRAM_ID};
 use crate::errors::CustomError;
+use crate::PoolOption;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 
@@ -87,6 +88,35 @@ pub fn set_winning_option(ctx: Context<UpdatePool>, winning_option: Pubkey) -> R
     Ok(())
 }
 
+pub fn fund_pool<'c: 'info, 'info>(
+    ctx: Context<'_, '_, 'c, 'info, FundPool<'info>>,
+    value: u64,
+) -> Result<()> {
+    let pool_account = &mut ctx.accounts.pool_account;
+    if pool_account.is_paused {
+        return err!(CustomError::PoolStateIncompatible);
+    }
+
+    if ctx.remaining_accounts.len() == 0 {
+        return err!(CustomError::NoPoolOptionAccounts);
+    }
+
+    let remaining_accounts = ctx.remaining_accounts;
+    let value_per_option = value / remaining_accounts.len() as u64;
+    for account in remaining_accounts {
+        let mut pool_option = match Account::<PoolOption>::try_from(account) {
+            Ok(pool_option) => pool_option,
+            Err(_) => return err!(CustomError::InvalidPoolOptionAccount),
+        };
+        pool_option.value += value_per_option;
+        pool_option.exit(&PROGRAM_ID)?;
+    }
+
+    pool_account.value += value;
+
+    Ok(())
+}
+
 #[derive(Accounts)]
 pub struct UpdatePool<'info> {
     #[account(mut)]
@@ -109,4 +139,10 @@ pub struct CreatePool<'info> {
     #[account(mut, signer)]
     pub admin: Signer<'info>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct FundPool<'info> {
+    #[account(mut)]
+    pub pool_account: Account<'info, Pool>,
 }
