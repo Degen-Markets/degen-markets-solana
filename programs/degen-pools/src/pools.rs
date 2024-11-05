@@ -3,6 +3,7 @@ use crate::errors::CustomError;
 use crate::PoolOption;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
+use anchor_lang::system_program::{Transfer, transfer};
 
 #[account]
 pub struct Pool {
@@ -112,6 +113,16 @@ pub fn fund_pool<'c: 'info, 'info>(
         pool_option.exit(&PROGRAM_ID)?;
     }
 
+    // Transfer SOL from caller to pool account
+    let cpi_context = CpiContext::new(
+        ctx.accounts.system_program.to_account_info(),
+        Transfer {
+            from: ctx.accounts.sender.to_account_info(),
+            to: pool_account.to_account_info(),
+        },
+    );
+    transfer(cpi_context, value)?;
+
     pool_account.value += value;
 
     Ok(())
@@ -145,4 +156,9 @@ pub struct CreatePool<'info> {
 pub struct FundPool<'info> {
     #[account(mut)]
     pub pool_account: Account<'info, Pool>,
+
+    pub system_program: Program<'info, System>,
+
+    #[account(mut, signer)]
+    pub sender: Signer<'info>,
 }

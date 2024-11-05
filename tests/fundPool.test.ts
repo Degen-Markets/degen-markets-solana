@@ -121,4 +121,34 @@ describe("fundPool", () => {
     ).value;
     expect(option3PostFundBal.eq(option3InitBal)).toBe(true);
   });
+
+  it("transfers the correct amount of lamports to the pool account", async () => {
+    const { optionAccountKey } = await createOption(
+      crypto.randomUUID(),
+      adminWallet,
+      poolAccountKey,
+    );
+    const preFundPoolLamports =
+      await program.provider.connection.getBalance(poolAccountKey);
+
+    const preFundSenderLamports = await program.provider.connection.getBalance(
+      adminWallet.publicKey,
+    );
+    const fundAmt = new BN(100);
+    await fundPool(fundAmt, poolAccountKey, [
+      { pubkey: optionAccountKey, isSigner: false, isWritable: true },
+    ]);
+
+    const postFundPoolLamports =
+      await program.provider.connection.getBalance(poolAccountKey);
+    expect(postFundPoolLamports).toEqual(
+      fundAmt.addn(preFundPoolLamports).toNumber(),
+    );
+    const postFundSenderLamports = await program.provider.connection.getBalance(
+      adminWallet.publicKey,
+    );
+    expect(preFundSenderLamports - postFundSenderLamports).toBeGreaterThan(
+      fundAmt.toNumber(),
+    );
+  });
 });
