@@ -5,13 +5,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-degen_pools = "Cj2fGpSkZxoMYXaLXtBWZU7GcBecEAMEmVwzsjMfKt71"
+degen_pools = "5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3"
 
 [programs.devnet]
-degen_pools = "Cj2fGpSkZxoMYXaLXtBWZU7GcBecEAMEmVwzsjMfKt71"
+degen_pools = "5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3"
 
 [programs.mainnet]
-degen_pools = "Cj2fGpSkZxoMYXaLXtBWZU7GcBecEAMEmVwzsjMfKt71"
+degen_pools = "5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3"
 
 [registry]
 url = "https://api.apr.dev"
@@ -24,7 +24,7 @@ wallet = "~/.config/solana/id.json"
 startup_wait = 60000
 
 [[test.genesis]]
-address = "Cj2fGpSkZxoMYXaLXtBWZU7GcBecEAMEmVwzsjMfKt71"
+address = "5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3"
 program = "target/deploy/degen_pools.so"
 
 [scripts]

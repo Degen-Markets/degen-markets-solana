@@ -13,7 +13,7 @@ mod errors;
 mod pool_options;
 mod pools;
 
-declare_id!("Cj2fGpSkZxoMYXaLXtBWZU7GcBecEAMEmVwzsjMfKt71");
+declare_id!("5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3");
 
 #[program]
 pub mod degen_pools {
