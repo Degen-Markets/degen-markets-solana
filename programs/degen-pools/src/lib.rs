@@ -1,17 +1,18 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::hash::hash;
 use anchor_lang::solana_program::pubkey::Pubkey;
 
 pub use entries::*;
 pub use errors::CustomError;
 pub use pool_options::*;
 pub use pools::*;
+pub use transfers::*;
 
 mod constants;
 mod entries;
 mod errors;
 mod pool_options;
 mod pools;
+mod transfers;
 
 declare_id!("5MnKYzSNUZgxjBNMz4QQczAeZyrEGJsuneV31p3tCEM3");
 
@@ -51,5 +52,9 @@ pub mod degen_pools {
 
     pub fn claim_win(ctx: Context<ClaimWin>) -> Result<()> {
         entries::claim_win(ctx)
+    }
+
+    pub fn execute_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Result<()> {
+        transfers::handle_transaction(ctx, amount)
     }
 }
