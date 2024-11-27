@@ -20,4 +20,6 @@ pub enum CustomError {
     DescriptionTooLong,
     #[msg("Pool account does not match derived key")]
     PoolAccountDoesNotMatch,
+    #[msg("Insufficient funds")]
+    InsufficientFunds,
 }

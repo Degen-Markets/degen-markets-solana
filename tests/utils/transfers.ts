@@ -1,22 +1,26 @@
-import { BN } from "bn.js";
-import { program } from "./constants";
 import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { DegenPools } from "../../target/types/degen_pools";
+import { PublicKey } from "@solana/web3.js";
 
 export const executeTransaction = async (
-  senderWallet: anchor.web3.Keypair,
-  receiver: anchor.web3.PublicKey,
-  amount: number,
-) => {
-  const transaction = anchor.web3.Keypair.generate();
+  program: Program<DegenPools>,
+  params: {
+    sender: anchor.web3.Keypair;
+    receiver: PublicKey;
+    amount: anchor.BN;
+  },
+): Promise<string> => {
+  const { sender, receiver, amount } = params;
 
-  return program.methods
-    .executeTransaction(new BN(amount * anchor.web3.LAMPORTS_PER_SOL))
+  const txSignature = await program.methods
+    .executeTransaction(amount)
     .accounts({
-      transaction: transaction.publicKey,
-      sender: senderWallet.publicKey,
+      sender: sender.publicKey,
       receiver: receiver,
-      system_program: anchor.web3.SystemProgram.programId,
     })
-    .signers([senderWallet, transaction])
+    .signers([sender])
     .rpc();
+
+  return txSignature;
 };

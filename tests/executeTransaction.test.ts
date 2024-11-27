@@ -32,7 +32,11 @@ describe("SOL Transfers", () => {
 
     const transferAmount = 0.5;
 
-    await executeTransaction(sender, receiver.publicKey, transferAmount);
+    await executeTransaction(program, {
+      sender,
+      receiver: receiver.publicKey,
+      amount: new anchor.BN(transferAmount * anchor.web3.LAMPORTS_PER_SOL),
+    });
 
     const finalSenderBalance = await provider.connection.getBalance(
       sender.publicKey,
@@ -44,7 +48,7 @@ describe("SOL Transfers", () => {
     expect(finalReceiverBalance - initialReceiverBalance).toBe(
       transferAmount * anchor.web3.LAMPORTS_PER_SOL,
     );
-    expect(initialSenderBalance - finalSenderBalance).toBeGreaterThan(
+    expect(initialSenderBalance - finalSenderBalance).toBe(
       transferAmount * anchor.web3.LAMPORTS_PER_SOL,
     );
   });
@@ -53,8 +57,12 @@ describe("SOL Transfers", () => {
     const poorSender = anchor.web3.Keypair.generate();
 
     await expect(
-      executeTransaction(poorSender, receiver.publicKey, 1),
-    ).rejects.toThrow(/insufficient funds/);
+      executeTransaction(program, {
+        sender: poorSender,
+        receiver: receiver.publicKey,
+        amount: new anchor.BN(2 * anchor.web3.LAMPORTS_PER_SOL),
+      }),
+    ).rejects.toThrow(/Insufficient funds/);
   });
 
   it("should fail when sender is not the signer", async () => {
@@ -64,14 +72,12 @@ describe("SOL Transfers", () => {
       program.methods
         .executeTransaction(new anchor.BN(0.1 * anchor.web3.LAMPORTS_PER_SOL))
         .accounts({
-          transaction: transaction.publicKey,
           sender: sender.publicKey,
           receiver: receiver.publicKey,
-          system_program: anchor.web3.SystemProgram.programId,
         })
-        .signers([transaction]) // Omitting sender signature
+        .signers([transaction])
         .rpc(),
-    ).rejects.toThrow(/Signature verification failed/);
+    ).rejects.toThrow(/unknown signer/);
   });
 
   it("should emit SOLTransferred event", async () => {
@@ -89,7 +95,11 @@ describe("SOL Transfers", () => {
       });
     });
 
-    await executeTransaction(sender, receiver.publicKey, transferAmount);
+    await executeTransaction(program, {
+      sender,
+      receiver: receiver.publicKey,
+      amount: new anchor.BN(transferAmount * anchor.web3.LAMPORTS_PER_SOL),
+    });
 
     const event = await eventPromise;
     expect(event).toMatchObject({

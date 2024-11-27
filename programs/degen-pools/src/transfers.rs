@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use crate::CustomError;
 
 #[derive(Accounts)]
 pub struct ExecuteTransaction<'info> {
@@ -11,14 +12,21 @@ pub struct ExecuteTransaction<'info> {
 }
 
 pub fn handle_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Result<()> {
+    require!(
+        ctx.accounts.sender.lamports() >= amount,
+        CustomError::InsufficientFunds
+    );
+
+    let cpi_context = CpiContext::new(
+        ctx.accounts.system_program.to_account_info(),
+        anchor_lang::system_program::Transfer {
+            from: ctx.accounts.sender.to_account_info(),
+            to: ctx.accounts.receiver.to_account_info(),
+        },
+    );
+
     anchor_lang::system_program::transfer(
-        CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            anchor_lang::system_program::Transfer {
-                from: ctx.accounts.sender.to_account_info(),
-                to: ctx.accounts.receiver.to_account_info(),
-            },
-        ),
+        cpi_context,
         amount,
     )?;
 
