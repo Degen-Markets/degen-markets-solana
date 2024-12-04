@@ -22,4 +22,6 @@ pub enum CustomError {
     PoolAccountDoesNotMatch,
     #[msg("Insufficient funds")]
     InsufficientFunds,
+    #[msg("Invalid transfer amount")]
+    InvalidAmount,
 }

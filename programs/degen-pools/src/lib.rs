@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::pubkey::Pubkey;
 
 pub use entries::*;
 pub use errors::CustomError;
@@ -54,7 +53,7 @@ pub mod degen_pools {
         entries::claim_win(ctx)
     }
 
-    pub fn execute_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Result<()> {
-        transfers::handle_transaction(ctx, amount)
+    pub fn execute_transfer(ctx: Context<ExecuteTransfer>, amount: u64) -> Result<()> {
+        transfers::handle_transfer(ctx, amount)
     }
 }

@@ -1,17 +1,24 @@
-use anchor_lang::prelude::*;
+use crate::constants::AUTHORITY_PUBKEY;
 use crate::CustomError;
+use anchor_lang::prelude::*; 
 
 #[derive(Accounts)]
-pub struct ExecuteTransaction<'info> {
+pub struct ExecuteTransfer<'info> {
     #[account(mut)]
     pub sender: Signer<'info>,
-    /// CHECK: Only used for SOL transfer
-    #[account(mut)]
-    pub receiver: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
+    /// CHECK: This is a safe account as it is the system
+    pub system_program: AccountInfo<'info>,
+    #[account(mut, address = AUTHORITY_PUBKEY)]
+    /// CHECK: The receiver's address is validated against a known authority.
+    pub receiver: AccountInfo<'info>, 
 }
 
-pub fn handle_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Result<()> {
+pub fn handle_transfer(ctx: Context<ExecuteTransfer>, amount: u64) -> Result<()> {
+    require!(
+        amount > 0,
+        CustomError::InvalidAmount
+    );
+
     require!(
         ctx.accounts.sender.lamports() >= amount,
         CustomError::InsufficientFunds
@@ -25,16 +32,11 @@ pub fn handle_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Resu
         },
     );
 
-    anchor_lang::system_program::transfer(
-        cpi_context,
-        amount,
-    )?;
+    anchor_lang::system_program::transfer(cpi_context, amount)?;
 
     emit!(SOLTransferred {
         sender: ctx.accounts.sender.key(),
-        receiver: ctx.accounts.receiver.key(),
         amount,
-        timestamp: Clock::get()?.unix_timestamp,
     });
 
     Ok(())
@@ -43,7 +45,5 @@ pub fn handle_transaction(ctx: Context<ExecuteTransaction>, amount: u64) -> Resu
 #[event]
 pub struct SOLTransferred {
     pub sender: Pubkey,
-    pub receiver: Pubkey,
     pub amount: u64,
-    pub timestamp: i64,
 }
