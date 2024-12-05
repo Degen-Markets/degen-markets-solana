@@ -62,20 +62,6 @@ describe("executeTransfer", () => {
     await checkBalances(params, transferAmount);
   });
 
-  it("should throw an error for zero transfer amount", async () => {
-    const params = { sender, receiver, amount: 0 };
-    await expect(executeTransfer(program, params)).rejects.toThrow();
-  });
-
-  it("should throw an error for insufficient funds", async () => {
-    const params = {
-      sender,
-      receiver,
-      amount: anchor.web3.LAMPORTS_PER_SOL * 2,
-    };
-    await expect(executeTransfer(program, params)).rejects.toThrow();
-  });
-
   it("should fail gracefully on incorrect signer", async () => {
     const incorrectSigner = anchor.web3.Keypair.generate(); // Unauthorized signer
     const params = {

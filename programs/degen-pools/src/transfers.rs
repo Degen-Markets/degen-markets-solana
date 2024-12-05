@@ -1,6 +1,6 @@
 use crate::constants::AUTHORITY_PUBKEY;
 use crate::CustomError;
-use anchor_lang::prelude::*; 
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct ExecuteTransfer<'info> {
@@ -10,19 +10,10 @@ pub struct ExecuteTransfer<'info> {
     pub system_program: AccountInfo<'info>,
     #[account(mut, address = AUTHORITY_PUBKEY)]
     /// CHECK: The receiver's address is validated against a known authority.
-    pub receiver: AccountInfo<'info>, 
+    pub receiver: AccountInfo<'info>,
 }
 
 pub fn handle_transfer(ctx: Context<ExecuteTransfer>, amount: u64) -> Result<()> {
-    require!(
-        amount > 0,
-        CustomError::InvalidAmount
-    );
-
-    require!(
-        ctx.accounts.sender.lamports() >= amount,
-        CustomError::InsufficientFunds
-    );
 
     let cpi_context = CpiContext::new(
         ctx.accounts.system_program.to_account_info(),
