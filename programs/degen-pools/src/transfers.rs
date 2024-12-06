@@ -1,5 +1,4 @@
 use crate::constants::AUTHORITY_PUBKEY;
-use crate::CustomError;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -14,7 +13,6 @@ pub struct ExecuteTransfer<'info> {
 }
 
 pub fn handle_transfer(ctx: Context<ExecuteTransfer>, amount: u64) -> Result<()> {
-
     let cpi_context = CpiContext::new(
         ctx.accounts.system_program.to_account_info(),
         anchor_lang::system_program::Transfer {
